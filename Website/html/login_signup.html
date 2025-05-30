@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Electrik | Login / Sign Up</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/user.css">
+</head>
+<body>
+  <header>
+        <div><strong>Electrik</strong></div>
+        <nav>
+            <a href="web.html">Home</a>
+            <a href="#">About</a>
+            <a href="product.html">Products</a>
+            <a href="#">Contact</a>
+            <a href="checkout.html">Checkout</a>
+            <a href="login_signup.html" class="btn">Login</a>
+        </nav>
+  </header>
+
+  <div class="container">
+    <h2 id="form-title">Login</h2>
+
+    <div class="login-toggle">
+      <button id="user-toggle" class="active" onclick="toggleLoginType('user')">User</button>
+      <button id="admin-toggle" onclick="toggleLoginType('admin')">Admin</button>
+    </div>
+
+    <!-- User Login Form -->
+    <form id="login-form">
+      <input type="text" placeholder="Email or Phone Number" required />
+      <input type="password" placeholder="Password" required />
+      <button type="submit">Login</button>
+    </form>
+
+    <!-- Admin Login Form -->
+    <form id="admin-login-form" style="display: none;">
+      <input type="text" placeholder="Admin Username" required />
+      <input type="password" placeholder="Admin Password" required />
+      <p class="admin-note">For store administrators only</p>
+      <button type="submit">Admin Login</button>
+    </form>
+
+    <!-- Sign Up Form -->
+    <form id="signup-form" style="display: none;">
+      <input type="text" placeholder="First Name" required />
+      <input type="text" placeholder="Last Name" required />
+      <input type="email" placeholder="Email" required />
+      <input type="tel" placeholder="Phone Number" required />
+      <input type="password" placeholder="Password" required />
+      <button type="submit">Sign Up</button>
+    </form>
+
+    <div class="toggle-link" onclick="toggleForms()">Don't have an account? Sign Up</div>
+  </div>
+
+  <script src="../js/auth.js"></script>
+</body>
+</html>

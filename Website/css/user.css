@@ -1,0 +1,191 @@
+/* Common styles for user pages */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    background: #fff;
+    color: #111;
+    margin: 0;
+}
+
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 40px;
+    border-bottom: 1px solid #ddd;
+    background-color: #fff;
+}
+
+nav a {
+    margin: 0 10px;
+    text-decoration: none;
+    color: #000;
+    font-weight: 500;
+}
+
+nav .btn {
+    padding: 8px 16px;
+    background: #000;
+    color: #fff;
+    border-radius: 4px;
+}
+
+/* Home page specific styles */
+section {
+    display: flex;
+    flex-wrap: wrap;
+    padding: 60px 40px;
+    gap: 40px;
+}
+
+.text-block, .image-block {
+    flex: 1 1 400px;
+}
+
+.text-block h1, .text-block h2 {
+    font-size: 3rem;
+    margin-bottom: 20px;
+}
+
+.text-block p {
+    font-size: 1rem;
+    margin-bottom: 20px;
+    max-width: 600px;
+}
+
+.text-block button {
+    padding: 10px 20px;
+    background: #000;
+    color: #fff;
+    border: none;
+    cursor: pointer;
+}
+
+.image-block img {
+    max-width: 100%;
+    border-radius: 10px;
+}
+
+.product-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+    padding: 0 40px 60px;
+}
+
+.product {
+    background: #f9f9f9;
+    padding: 20px;
+    border-radius: 10px;
+    text-align: center;
+}
+
+.product img {
+    max-width: 100%;
+    border-radius: 8px;
+}
+
+.footer {
+    background: #f1f1f1;
+    padding: 40px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+}
+
+.footer div {
+    margin: 10px 0;
+}
+
+.footer a {
+    display: block;
+    text-decoration: none;
+    color: #333;
+    margin-bottom: 5px;
+}
+
+/* Login/Signup page specific styles */
+.container {
+    background: white;
+    padding: 40px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    max-width: 400px;
+    width: 100%;
+    margin: 60px auto;
+}
+
+h2 {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+input, button {
+    margin-bottom: 25px;
+    padding: 12px;
+    width: 100%;
+    border-radius: 5px;
+    font-size: 1rem;
+}
+
+input {
+    border: 1px solid #ccc;
+}
+
+button {
+    background-color: #000;
+    color: #fff;
+    border: none;
+    cursor: pointer;
+}
+
+.toggle-link {
+    margin-top: 30px;
+    text-align: center;
+    cursor: pointer;
+    color: #007BFF;
+    font-size: 0.95rem;
+}
+
+.login-toggle {
+    display: flex;
+    margin-bottom: 20px;
+    border-radius: 5px;
+    overflow: hidden;
+    border: 1px solid #ddd;
+}
+
+.login-toggle button {
+    flex: 1;
+    padding: 10px;
+    background: #f4f4f4;
+    color: #333;
+    border: none;
+    margin: 0;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.login-toggle button.active {
+    background-color: #000;
+    color: white;
+}
+
+.admin-note {
+    font-size: 0.8rem;
+    color: #777;
+    text-align: center;
+    margin-top: -15px;
+    margin-bottom: 15px;
+} 
