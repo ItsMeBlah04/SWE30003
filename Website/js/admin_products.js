@@ -1,5 +1,5 @@
 // API endpoints
-const API_URL = 'admin_update_product.php';
+const API_URL = 'http://localhost:5000/admin_update_product';
 
 // Sample product data as fallback (will be replaced with data from the API)
 let products = [];

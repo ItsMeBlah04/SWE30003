@@ -2,8 +2,10 @@ from flask import Flask, request, jsonify
 import sqlite3
 import os
 import json
+from flask_cors import CORS
 
 app = Flask(__name__)
+CORS(app)  # Enable CORS for all routes
 
 # Database configuration
 DB_FILE = 'shop.db'  # SQLite database file
@@ -289,6 +291,87 @@ def admin_update_product():
         response['message'] = f"Error: {str(e)}"
     
     return jsonify(response)
+
+# Add this new route to view database tables
+@app.route('/db_viewer', methods=['GET'])
+def db_viewer():
+    try:
+        conn = get_db_connection()
+        if not conn:
+            return jsonify({"error": "Database connection failed"}), 500
+        
+        cursor = conn.cursor()
+        
+        # Get list of all tables
+        cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'")
+        tables = [row['name'] for row in cursor.fetchall()]
+        
+        # Get table data if specified
+        table_name = request.args.get('table')
+        table_data = None
+        columns = None
+        
+        if table_name and table_name in tables:
+            # Get columns
+            cursor.execute(f"PRAGMA table_info({table_name})")
+            columns = [col['name'] for col in cursor.fetchall()]
+            
+            # Get data
+            cursor.execute(f"SELECT * FROM {table_name} LIMIT 100")
+            rows = cursor.fetchall()
+            table_data = [dict(row) for row in rows]
+        
+        conn.close()
+        
+        # Return HTML page for better viewing
+        html = f"""
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>SQLite Database Viewer</title>
+            <style>
+                body {{ font-family: Arial, sans-serif; margin: 20px; }}
+                h1, h2 {{ color: #333; }}
+                .tables {{ display: flex; flex-wrap: wrap; margin-bottom: 20px; }}
+                .tables a {{ margin: 5px; padding: 8px 15px; background: #f0f0f0; 
+                           text-decoration: none; color: #333; border-radius: 4px; }}
+                .tables a:hover {{ background: #e0e0e0; }}
+                .tables a.active {{ background: #007bff; color: white; }}
+                table {{ border-collapse: collapse; width: 100%; }}
+                th, td {{ border: 1px solid #ddd; padding: 8px; text-align: left; }}
+                th {{ background-color: #f2f2f2; }}
+                tr:nth-child(even) {{ background-color: #f9f9f9; }}
+            </style>
+        </head>
+        <body>
+            <h1>SQLite Database Viewer</h1>
+            
+            <div class="tables">
+                <strong>Tables: </strong>
+                {' '.join([f'<a href="/db_viewer?table={t}" class="{"active" if table_name == t else ""}">{t}</a>' for t in tables])}
+            </div>
+            
+            {f'<h2>Table: {table_name}</h2>' if table_name else ''}
+            
+            {f'''
+            <table>
+                <thead>
+                    <tr>{''.join([f'<th>{col}</th>' for col in columns])}</tr>
+                </thead>
+                <tbody>
+                    {''.join([f"<tr>{''.join([f'<td>{row.get(col, '')}</td>' for col in columns])}</tr>" for row in table_data])}
+                </tbody>
+            </table>
+            ''' if table_data else ''}
+            
+        </body>
+        </html>
+        """
+        
+        return html
+    
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000) 
