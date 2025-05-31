@@ -14,6 +14,8 @@ CREATE TABLE `PRODUCT` (
   `Description` text,
   `Price` decimal,
   `Stock` int,
+  `Category` varchar,
+  `Image` varchar,
   `Barcode` varchar,
   `SerialNumber` varchar,
   `Manufacter` varchar,

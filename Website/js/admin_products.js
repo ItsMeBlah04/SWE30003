@@ -1,51 +1,8 @@
-// Sample product data
-let products = [
-  {
-    id: 1,
-    name: "iPhone 16 Pro",
-    category: "phone",
-    price: 999.00,
-    stock: 45,
-    image: "../images/iphone.jpg",
-    description: "Apple's latest flagship phone with advanced camera system."
-  },
-  {
-    id: 2,
-    name: "Apple Watch 10",
-    category: "watch",
-    price: 399.00,
-    stock: 30,
-    image: "../images/apple watch.jpg",
-    description: "Thin and light Apple Watch for indoor and outdoor activities."
-  },
-  {
-    id: 3,
-    name: "iPad Pro 11",
-    category: "tablet",
-    price: 799.00,
-    stock: 25,
-    image: "../images/ipad.jpg",
-    description: "Professional-grade tablet with M2 chip."
-  },
-  {
-    id: 4,
-    name: "MacBook Air M2",
-    category: "laptop",
-    price: 1299.00,
-    stock: 20,
-    image: "../images/macbook.jpg",
-    description: "Thin and light laptop with all-day battery life."
-  },
-  {
-    id: 5,
-    name: "Apple Watch Ultra",
-    category: "watch",
-    price: 1399.00,
-    stock: 15,
-    image: "../images/apple watch ultra.jpg",
-    description: "Rugged and capable Apple Watch for outdoor adventures."
-  }
-];
+// API endpoints
+const API_URL = 'admin_update_product.php';
+
+// Sample product data as fallback (will be replaced with data from the API)
+let products = [];
 
 // DOM Elements
 const productForm = document.getElementById('product-form');
@@ -58,14 +15,44 @@ const deleteModal = document.getElementById('delete-modal');
 const closeModal = document.getElementById('close-modal');
 const cancelDelete = document.getElementById('cancel-delete');
 const confirmDelete = document.getElementById('confirm-delete');
+const messageContainer = document.getElementById('message-container');
 
 let currentProductId = null;
 
 // Initialize
 document.addEventListener('DOMContentLoaded', function() {
-  displayProducts();
+  loadProducts();
   setupEventListeners();
 });
+
+// Load products from the database
+function loadProducts() {
+  // Show loading indicator
+  productList.innerHTML = '<tr><td colspan="7" style="text-align: center;">Loading products...</td></tr>';
+  
+  const formData = new FormData();
+  formData.append('action', 'get_all');
+  
+  fetch(API_URL, {
+    method: 'POST',
+    body: formData
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.success) {
+      products = data.products;
+      displayProducts();
+    } else {
+      showMessage(data.message || 'Error loading products', false);
+      productList.innerHTML = '<tr><td colspan="7" style="text-align: center;">Failed to load products</td></tr>';
+    }
+  })
+  .catch(error => {
+    console.error('Failed to load products:', error);
+    showMessage('Network error: ' + error, false);
+    productList.innerHTML = '<tr><td colspan="7" style="text-align: center;">Failed to load products</td></tr>';
+  });
+}
 
 // Setup event listeners
 function setupEventListeners() {
@@ -98,6 +85,11 @@ function setupEventListeners() {
 function displayProducts() {
   productList.innerHTML = '';
   
+  if (products.length === 0) {
+    productList.innerHTML = '<tr><td colspan="7" style="text-align: center;">No products found</td></tr>';
+    return;
+  }
+  
   products.forEach(product => {
     const row = document.createElement('tr');
     
@@ -105,8 +97,8 @@ function displayProducts() {
       <td>${product.id}</td>
       <td><img src="${product.image}" alt="${product.name}" width="50" height="50" onerror="this.src='../images/placeholder.jpg'"></td>
       <td>${product.name}</td>
-      <td>${capitalizeFirstLetter(product.category)}</td>
-      <td>$${product.price.toFixed(2)}</td>
+      <td>${capitalizeFirstLetter(product.category || '')}</td>
+      <td>$${parseFloat(product.price).toFixed(2)}</td>
       <td>${product.stock}</td>
       <td class="btn-group">
         <button class="btn-action btn-edit" data-id="${product.id}">Edit</button>
@@ -151,32 +143,53 @@ function hideProductForm() {
 
 // Edit an existing product
 function editProduct(id) {
-  const product = products.find(p => p.id === id);
-  if (!product) return;
-  
-  formTitle.textContent = 'Edit Product';
-  currentProductId = id;
-  
-  document.getElementById('product-id').value = product.id;
-  document.getElementById('product-name').value = product.name;
-  document.getElementById('product-category').value = product.category;
-  document.getElementById('product-price').value = product.price;
-  document.getElementById('product-stock').value = product.stock;
-  document.getElementById('product-image').value = product.image;
-  document.getElementById('product-description').value = product.description;
-  
-  // Show image preview
-  const previewContainer = document.getElementById('image-preview-container');
-  previewContainer.innerHTML = '';
-  if (product.image) {
-    const img = document.createElement('img');
-    img.src = product.image;
-    img.className = 'image-preview';
-    previewContainer.appendChild(img);
-  }
-  
+  // Show loading in form
+  formTitle.textContent = 'Loading...';
   productForm.style.display = 'block';
-  saveBtn.textContent = 'Save Changes';
+  
+  const formData = new FormData();
+  formData.append('action', 'get_product');
+  formData.append('id', id);
+  
+  fetch(API_URL, {
+    method: 'POST',
+    body: formData
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.success) {
+      const product = data.product;
+      formTitle.textContent = 'Edit Product';
+      currentProductId = product.id;
+      
+      document.getElementById('product-id').value = product.id;
+      document.getElementById('product-name').value = product.name;
+      document.getElementById('product-category').value = product.category || '';
+      document.getElementById('product-price').value = product.price;
+      document.getElementById('product-stock').value = product.stock;
+      document.getElementById('product-image').value = product.image;
+      document.getElementById('product-description').value = product.description;
+      
+      // Show image preview
+      const previewContainer = document.getElementById('image-preview-container');
+      previewContainer.innerHTML = '';
+      if (product.image) {
+        const img = document.createElement('img');
+        img.src = product.image;
+        img.className = 'image-preview';
+        previewContainer.appendChild(img);
+      }
+      
+      saveBtn.textContent = 'Save Changes';
+    } else {
+      hideProductForm();
+      showMessage(data.message || 'Error retrieving product', false);
+    }
+  })
+  .catch(error => {
+    hideProductForm();
+    showMessage('Network error: ' + error, false);
+  });
 }
 
 // Save product (add new or update existing)
@@ -192,23 +205,52 @@ function saveProduct(e) {
     description: document.getElementById('product-description').value
   };
   
-  if (currentProductId) {
-    // Update existing product
-    const index = products.findIndex(p => p.id === currentProductId);
-    if (index !== -1) {
-      products[index] = { ...products[index], ...productData };
-    }
-  } else {
-    // Add new product
-    const newId = products.length > 0 ? Math.max(...products.map(p => p.id)) + 1 : 1;
-    products.push({
-      id: newId,
-      ...productData
-    });
+  const isUpdate = currentProductId !== null;
+  
+  if (isUpdate) {
+    productData.id = currentProductId;
   }
   
-  hideProductForm();
-  displayProducts();
+  // Disable the save button while processing
+  saveBtn.disabled = true;
+  saveBtn.textContent = isUpdate ? 'Saving...' : 'Adding...';
+  
+  const formData = new FormData();
+  formData.append('action', isUpdate ? 'update' : 'create');
+  
+  // Add all product fields to the form data
+  for (const key in productData) {
+    formData.append(key, productData[key]);
+  }
+  
+  fetch(API_URL, {
+    method: 'POST',
+    body: formData
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.success) {
+      // For new products, add the new ID to the product object
+      if (!isUpdate && data.id) {
+        productData.id = data.id;
+      }
+      
+      hideProductForm();
+      showMessage(isUpdate ? 'Product updated successfully' : 'Product created successfully', true);
+      
+      // Reload products from the server to ensure data consistency
+      loadProducts();
+    } else {
+      saveBtn.disabled = false;
+      saveBtn.textContent = isUpdate ? 'Save Changes' : 'Add Product';
+      showMessage(data.message || 'Error saving product', false);
+    }
+  })
+  .catch(error => {
+    saveBtn.disabled = false;
+    saveBtn.textContent = isUpdate ? 'Save Changes' : 'Add Product';
+    showMessage('Network error: ' + error, false);
+  });
 }
 
 // Show delete confirmation modal
@@ -226,9 +268,45 @@ function hideDeleteModal() {
 // Delete product when confirmed
 function deleteConfirmed() {
   if (currentProductId) {
-    products = products.filter(p => p.id !== currentProductId);
-    displayProducts();
-    hideDeleteModal();
+    // Disable delete button while processing
+    confirmDelete.disabled = true;
+    confirmDelete.textContent = 'Deleting...';
+    
+    const formData = new FormData();
+    formData.append('action', 'delete');
+    formData.append('id', currentProductId);
+    
+    fetch(API_URL, {
+      method: 'POST',
+      body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+      hideDeleteModal();
+      
+      if (data.success) {
+        showMessage('Product deleted successfully', true);
+        // Reload products from the server
+        loadProducts();
+      } else {
+        showMessage(data.message || 'Error deleting product', false);
+      }
+    })
+    .catch(error => {
+      hideDeleteModal();
+      showMessage('Network error: ' + error, false);
+    });
+  }
+}
+
+// Display messages
+function showMessage(message, isSuccess) {
+  const messageClass = isSuccess ? 'success' : 'error';
+  if (messageContainer) {
+    messageContainer.innerHTML = `<div class="message ${messageClass}">${message}</div>`;
+    setTimeout(function() {
+      messageContainer.innerHTML = '';
+    }, 5000);
   }
 }
 
