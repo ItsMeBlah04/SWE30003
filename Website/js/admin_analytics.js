@@ -3,38 +3,22 @@ window.onload = function() {
   // Initialize the Chart.js charts
   initCharts();
   
-  // Load sample data
-  loadSampleData();
+  // Load data from API
+  loadAnalyticsData();
   
   // Set up event listeners
   document.getElementById('apply-filters').addEventListener('click', applyFilters);
   document.getElementById('export-pdf').addEventListener('click', exportPDF);
 };
 
-// Sample data for charts and tables
-const sampleData = {
-  monthlySales: [15200, 17800, 16500, 20100, 22400, 24800, 26200, 28900, 27500, 30100, 32800, 35000],
-  categoryData: {
-    phones: 42,
-    tablets: 18,
-    laptops: 25,
-    watches: 8,
-    accessories: 7
-  },
-  topProducts: [
-    { name: 'iPhone 16 Pro', category: 'phone', units: 245, revenue: 244755 },
-    { name: 'MacBook Air M2', category: 'laptop', units: 130, revenue: 155870 },
-    { name: 'iPad Pro 12.9', category: 'tablet', units: 118, revenue: 129682 },
-    { name: 'Apple Watch Ultra', category: 'watch', units: 95, revenue: 75905 },
-    { name: 'AirPods Pro', category: 'accessories', units: 210, revenue: 52290 }
-  ]
-};
+// Store current analytics data
+let currentData = null;
 
 // Chart objects
 let salesChart;
 let categoryChart;
 
-// Initialize charts
+// Initialize charts with empty data
 function initCharts() {
   // Monthly sales chart
   const salesCtx = document.getElementById('sales-chart').getContext('2d');
@@ -44,7 +28,7 @@ function initCharts() {
       labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
       datasets: [{
         label: 'Monthly Sales ($)',
-        data: sampleData.monthlySales,
+        data: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], // Empty data
         fill: false,
         borderColor: '#007bff',
         tension: 0.1
@@ -73,13 +57,7 @@ function initCharts() {
     data: {
       labels: ['Phones', 'Tablets', 'Laptops', 'Watches', 'Accessories'],
       datasets: [{
-        data: [
-          sampleData.categoryData.phones,
-          sampleData.categoryData.tablets,
-          sampleData.categoryData.laptops,
-          sampleData.categoryData.watches,
-          sampleData.categoryData.accessories
-        ],
+        data: [0, 0, 0, 0, 0], // Empty data
         backgroundColor: [
           '#007bff',
           '#28a745',
@@ -101,19 +79,93 @@ function initCharts() {
   });
 }
 
-// Load sample data to the page
-function loadSampleData() {
-  // Update total stats
-  document.getElementById('total-revenue').textContent = '$' + calculateTotalRevenue().toLocaleString();
-  document.getElementById('total-orders').textContent = calculateTotalOrders().toLocaleString();
-  document.getElementById('avg-order').textContent = '$' + calculateAverageOrder().toLocaleString();
-  document.getElementById('conversion-rate').textContent = '3.2%';
+// Load analytics data from API
+function loadAnalyticsData(filters = {}) {
+  // Show loading state
+  document.getElementById('total-revenue').textContent = 'Loading...';
+  document.getElementById('total-orders').textContent = 'Loading...';
+  document.getElementById('avg-order').textContent = 'Loading...';
+  document.getElementById('conversion-rate').textContent = 'Loading...';
   
-  // Populate top products table
+  // Prepare URL with query parameters
+  // Use the PHP endpoint in XAMPP
+  let url = '../api/analytics.php';
+  const params = new URLSearchParams();
+  
+  if (filters.month) params.append('month', filters.month);
+  if (filters.year) params.append('year', filters.year);
+  if (filters.category) params.append('category', filters.category);
+  
+  if (params.toString()) {
+    url += '?' + params.toString();
+  }
+  
+  console.log('Fetching analytics data from:', url);
+  
+  // Fetch data from API
+  fetch(url)
+    .then(response => {
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+      return response.json();
+    })
+    .then(data => {
+      console.log('Received data:', data);
+      if (data.success) {
+        currentData = data;
+        updateDashboard(data);
+      } else {
+        console.error('API Error:', data.message);
+        // Show fallback data if API fails
+        loadSampleData();
+      }
+    })
+    .catch(error => {
+      console.error('Fetch error:', error);
+      // Show fallback data if fetch fails
+      loadSampleData();
+    });
+}
+
+// Update dashboard with data
+function updateDashboard(data) {
+  // Update stats
+  document.getElementById('total-revenue').textContent = '$' + data.stats.totalRevenue.toLocaleString();
+  document.getElementById('total-orders').textContent = data.stats.totalOrders.toLocaleString();
+  document.getElementById('avg-order').textContent = '$' + data.stats.averageOrder.toLocaleString();
+  document.getElementById('conversion-rate').textContent = data.stats.conversionRate + '%';
+  
+  // Update charts
+  updateCharts(data);
+  
+  // Update top products
+  updateTopProductsTable(data.topProducts);
+}
+
+// Update charts with new data
+function updateCharts(data) {
+  // Update monthly sales chart
+  salesChart.data.datasets[0].data = data.monthlySales;
+  salesChart.update();
+  
+  // Update category chart
+  categoryChart.data.datasets[0].data = [
+    data.categoryData.phone,
+    data.categoryData.tablet,
+    data.categoryData.laptop,
+    data.categoryData.watch,
+    data.categoryData.accessories
+  ];
+  categoryChart.update();
+}
+
+// Update top products table
+function updateTopProductsTable(products) {
   const topProductsTable = document.getElementById('top-products');
   topProductsTable.innerHTML = '';
   
-  sampleData.topProducts.forEach(product => {
+  products.forEach(product => {
     const row = document.createElement('tr');
     row.innerHTML = `
       <td>${product.name}</td>
@@ -125,71 +177,48 @@ function loadSampleData() {
   });
 }
 
-// Apply filters to data
+// Apply filters
 function applyFilters() {
   const month = document.getElementById('month-filter').value;
   const year = document.getElementById('year-filter').value;
   const category = document.getElementById('category-filter').value;
   
-  // This would normally make an API call to get filtered data
-  // For demo purposes, we'll just show a message and keep the same data
-  alert(`Filters applied: Month: ${month}, Year: ${year}, Category: ${category}`);
-  
-  // For demonstration, let's modify the charts slightly when filters are applied
-  // In a real application, this would use real filtered data
-  if (month !== 'all') {
-    // If specific month is selected, highlight that month in chart
-    const monthIndex = parseInt(month) - 1;
-    const newData = [...sampleData.monthlySales].map((val, i) => 
-      i === monthIndex ? val * 1.2 : val * 0.7
-    );
-    
-    salesChart.data.datasets[0].data = newData;
-    salesChart.update();
-    
-    // Also update total stats based on "filtered" data
-    document.getElementById('total-revenue').textContent = '$' + (calculateTotalRevenue() * 0.8).toLocaleString();
-    document.getElementById('total-orders').textContent = Math.round(calculateTotalOrders() * 0.8).toLocaleString();
-  } else {
-    // Reset to original data
-    salesChart.data.datasets[0].data = sampleData.monthlySales;
-    salesChart.update();
-    
-    document.getElementById('total-revenue').textContent = '$' + calculateTotalRevenue().toLocaleString();
-    document.getElementById('total-orders').textContent = calculateTotalOrders().toLocaleString();
-  }
-  
-  if (category !== 'all') {
-    // Modify category chart to emphasize selected category
-    const categoryIndex = getCategoryIndex(category);
-    const newData = [
-      sampleData.categoryData.phones * (category === 'phone' ? 1.5 : 0.7),
-      sampleData.categoryData.tablets * (category === 'tablet' ? 1.5 : 0.7),
-      sampleData.categoryData.laptops * (category === 'laptop' ? 1.5 : 0.7),
-      sampleData.categoryData.watches * (category === 'watch' ? 1.5 : 0.7),
-      sampleData.categoryData.accessories * (category === 'accessories' ? 1.5 : 0.7)
-    ];
-    
-    categoryChart.data.datasets[0].data = newData;
-    categoryChart.update();
-    
-    // Filter top products
-    const filteredProducts = sampleData.topProducts.filter(p => p.category === category);
-    updateTopProductsTable(filteredProducts);
-  } else {
-    // Reset to original data
-    categoryChart.data.datasets[0].data = [
-      sampleData.categoryData.phones,
-      sampleData.categoryData.tablets,
-      sampleData.categoryData.laptops,
-      sampleData.categoryData.watches,
-      sampleData.categoryData.accessories
-    ];
-    categoryChart.update();
-    
-    // Reset top products
-    updateTopProductsTable(sampleData.topProducts);
-  }
+  // Load data with filters
+  loadAnalyticsData({
+    month: month,
+    year: year,
+    category: category
+  });
+}
+
+// Sample data for fallback if API fails
+const sampleData = {
+  stats: {
+    totalRevenue: 297300,
+    totalOrders: 534,
+    averageOrder: 557,
+    conversionRate: 3.2
+  },
+  monthlySales: [15200, 17800, 16500, 20100, 22400, 24800, 26200, 28900, 27500, 30100, 32800, 35000],
+  categoryData: {
+    phone: 42,
+    tablet: 18,
+    laptop: 25,
+    watch: 8,
+    accessories: 7
+  },
+  topProducts: [
+    { name: "iPhone 16", category: "phone", units: 245, revenue: 244755 },
+    { name: "MacBook", category: "laptop", units: 130, revenue: 155870 },
+    { name: "iPad Pro", category: "tablet", units: 118, revenue: 129682 },
+    { name: "Apple Watch Ultra", category: "watch", units: 95, revenue: 75905 },
+    { name: "Apple Watch", category: "watch", units: 210, revenue: 52290 }
+  ]
+};
+
+// Load sample data as fallback
+function loadSampleData() {
+  updateDashboard(sampleData);
 }
 
 // Export as PDF
@@ -224,40 +253,7 @@ function exportPDF() {
   });
 }
 
-// Helper functions
-function calculateTotalRevenue() {
-  return sampleData.monthlySales.reduce((a, b) => a + b, 0);
-}
-
-function calculateTotalOrders() {
-  return 534; // Sample fixed value for demo
-}
-
-function calculateAverageOrder() {
-  return Math.round(calculateTotalRevenue() / calculateTotalOrders());
-}
-
-function getCategoryIndex(category) {
-  const categories = ['phone', 'tablet', 'laptop', 'watch', 'accessories'];
-  return categories.indexOf(category);
-}
-
-function updateTopProductsTable(products) {
-  const topProductsTable = document.getElementById('top-products');
-  topProductsTable.innerHTML = '';
-  
-  products.forEach(product => {
-    const row = document.createElement('tr');
-    row.innerHTML = `
-      <td>${product.name}</td>
-      <td><span class="category-pill pill-${product.category}">${capitalizeFirstLetter(product.category)}</span></td>
-      <td>${product.units}</td>
-      <td>$${product.revenue.toLocaleString()}</td>
-    `;
-    topProductsTable.appendChild(row);
-  });
-}
-
+// Helper function to capitalize first letter
 function capitalizeFirstLetter(string) {
   return string.charAt(0).toUpperCase() + string.slice(1);
 } 

@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analytics API Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            line-height: 1.6;
+        }
+        h1 {
+            color: #333;
+        }
+        button {
+            padding: 10px 15px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+            margin-bottom: 20px;
+        }
+        pre {
+            background-color: #f4f4f4;
+            padding: 15px;
+            border: 1px solid #ddd;
+            overflow: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>Analytics API Test</h1>
+    
+    <button id="test-api">Test API</button>
+    
+    <h2>Response:</h2>
+    <pre id="response">Click the button to test the API...</pre>
+    
+    <script>
+        document.getElementById('test-api').addEventListener('click', function() {
+            const responseElement = document.getElementById('response');
+            responseElement.textContent = 'Loading...';
+            
+            fetch('analytics.php')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    responseElement.textContent = JSON.stringify(data, null, 2);
+                })
+                .catch(error => {
+                    responseElement.textContent = 'Error: ' + error.message;
+                });
+        });
+    </script>
+</body>
+</html> 
