@@ -1,0 +1,110 @@
+/* Reset and base */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: #f4f4f4;
+}
+
+/* Header */
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 40px;
+  background-color: #fff;
+  border-bottom: 1px solid #ddd;
+}
+
+
+/* Navbar (copied exactly from checkout page) */
+nav a {
+  margin: 0 10px;
+  text-decoration: none;
+  color: #000;
+  font-weight: 500;
+}
+
+nav a.active {
+  background-color: #000;
+  color: #fff;
+  border-radius: 4px;
+  padding: 8px 16px;
+}
+
+nav .btn {
+  padding: 8px 16px;
+  background: #000;
+  color: #fff;
+  border-radius: 4px;
+}
+
+/* Track Order Section */
+.track-section {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 80px 20px;
+}
+
+.track-container {
+  width: 100%;
+  max-width: 500px;
+  background-color: #fff;
+  padding: 32px;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  text-align: center;
+}
+
+.track-container h1 {
+  font-size: 28px;
+  margin-bottom: 12px;
+}
+
+.track-subtext {
+  font-size: 15px;
+  color: #555;
+  margin-bottom: 25px;
+}
+
+input[type="text"] {
+  width: 100%;
+  padding: 12px;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  margin-bottom: 20px;
+}
+
+button {
+  width: 100%;
+  padding: 12px;
+  font-size: 16px;
+  background-color: #000;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+button:hover {
+  background-color: #222;
+}
+
+.result-box {
+  margin-top: 20px;
+  padding: 16px;
+  border-radius: 6px;
+  background-color: #f8f8f8;
+  border: 1px solid #ddd;
+  font-size: 16px;
+  color: #333;
+}
