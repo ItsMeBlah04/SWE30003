@@ -3,6 +3,7 @@ import sqlite3
 import os
 import json
 from flask_cors import CORS
+from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__)
 CORS(app)  # Enable CORS for all routes
@@ -372,6 +373,84 @@ def db_viewer():
     
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+@app.route('/signup', methods=['POST'])
+def signup():
+    response = {'success': False, 'message': ''}
+    try:
+        data = request.get_json() or request.form
+        first_name = data.get('first_name', '').strip()
+        last_name = data.get('last_name', '').strip()
+        email = data.get('email', '').strip().lower()
+        phone = data.get('phone', '').strip()
+        password = data.get('password', '')
+        address = data.get('address', '')  # Optional, not in form but in DB
+        username = email if email else phone
+
+        if not (first_name and last_name and (email or phone) and password):
+            response['message'] = 'Missing required fields.'
+            return jsonify(response)
+
+        conn = get_db_connection()
+        if not conn:
+            response['message'] = 'Database connection failed.'
+            return jsonify(response)
+        cursor = conn.cursor()
+
+        # Check if email or phone already exists
+        cursor.execute('SELECT * FROM CUSTOMER WHERE Email = ? OR Phone = ?', (email, phone))
+        if cursor.fetchone():
+            response['message'] = 'Email or phone already registered.'
+            conn.close()
+            return jsonify(response)
+
+        # Insert into CUSTOMER
+        name = f"{first_name} {last_name}"
+        cursor.execute('INSERT INTO CUSTOMER (Name, Address, Phone, Email) VALUES (?, ?, ?, ?)',
+                       (name, address, phone, email))
+        customer_id = cursor.lastrowid
+
+        # Insert into AUTHENTICATOR
+        password_hash = generate_password_hash(password)
+        cursor.execute('INSERT INTO AUTHENTICATOR (CustomerID, UserName, PasswordHarsh) VALUES (?, ?, ?)',
+                       (customer_id, username, password_hash))
+        conn.commit()
+        conn.close()
+        response['success'] = True
+        response['message'] = 'Account created successfully.'
+        return jsonify(response)
+    except Exception as e:
+        response['message'] = f'Error: {str(e)}'
+        return jsonify(response)
+
+@app.route('/login', methods=['POST'])
+def login():
+    response = {'success': False, 'message': ''}
+    try:
+        data = request.get_json() or request.form
+        username = data.get('username', '').strip().lower()
+        password = data.get('password', '')
+        if not (username and password):
+            response['message'] = 'Missing username or password.'
+            return jsonify(response)
+        conn = get_db_connection()
+        if not conn:
+            response['message'] = 'Database connection failed.'
+            return jsonify(response)
+        cursor = conn.cursor()
+        # Try to find by email or phone
+        cursor.execute('SELECT * FROM AUTHENTICATOR WHERE UserName = ?', (username,))
+        user = cursor.fetchone()
+        if user and check_password_hash(user['PasswordHarsh'], password):
+            response['success'] = True
+            response['message'] = 'Login successful.'
+        else:
+            response['message'] = 'Login failed, please try again.'
+        conn.close()
+        return jsonify(response)
+    except Exception as e:
+        response['message'] = f'Error: {str(e)}'
+        return jsonify(response)
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000) 
