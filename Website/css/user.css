@@ -73,21 +73,19 @@ section {
 
 .product-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 20px;
-    padding: 0 40px 60px;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 24px;
 }
 
-.product {
-    background: #f9f9f9;
-    padding: 20px;
-    border-radius: 10px;
-    text-align: center;
-}
-
-.product img {
-    max-width: 100%;
+.product-card img {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
     border-radius: 8px;
+}
+
+.product-card {
+    width: 100%;
 }
 
 .footer {
@@ -188,4 +186,8 @@ button {
     text-align: center;
     margin-top: -15px;
     margin-bottom: 15px;
+}
+
+.form-group {
+    margin-bottom: 28px;
 } 

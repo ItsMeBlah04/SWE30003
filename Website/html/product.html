@@ -22,38 +22,42 @@
     </header>
 
     <section class="products-section">
-        <div class="product-grid">
-            <div class="product-card">
-                <img src="../images/iphone.jpg" alt="iPhone 16">
-                <h3>iPhone 16</h3>
-                <div class="price">$999</div>
-                <a href="product-iphone16.html">Learn More</a>
-            </div>
-            <div class="product-card">
-                <img src="../images/ipad.jpg" alt="iPad Pro">
-                <h3>iPad Pro</h3>
-                <div class="price">$799</div>
-                <a href="product-ipadpro.html">Learn More</a>
-            </div>
-            <div class="product-card">
-                <img src="../images/macbook.jpg" alt="MacBook Pro">
-                <h3>MacBook</h3>
-                <div class="price">$1299</div>
-                <a href="product-workpro.html">Learn More</a>
-            </div>
-            <div class="product-card">
-                <img src="../images/apple watch.jpg" alt="Apple Watch">
-                <h3>Apple Watch</h3>
-                <div class="price">$399</div>
-                <a href="product-applewatch.html">Learn More</a>
-            </div>
-            <div class="product-card">
-                <img src="../images/apple watch ultra.jpg" alt="Apple Watch Ultra">
-                <h3>Apple Watch Ultra</h3>
-                <div class="price">$1399</div>
-                <a href="product-applewatchultra.html">Learn More</a>
-            </div>
-        </div>
+        <div id="product-list" class="product-grid"></div>
     </section>
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const productList = document.getElementById('product-list');
+        productList.innerHTML = '<div style="grid-column: 1/-1; text-align:center;">Loading products...</div>';
+        const formData = new FormData();
+        formData.append('action', 'get_all');
+        fetch('http://localhost:5000/admin_update_product', {
+            method: 'POST',
+            body: formData
+        })
+        .then(res => res.json())
+        .then(data => {
+            productList.innerHTML = '';
+            if (data.success && data.products && data.products.length > 0) {
+                data.products.forEach(product => {
+                    const card = document.createElement('div');
+                    card.className = 'product-card';
+                    card.innerHTML = `
+                        <img src="${product.image}" alt="${product.name}" onerror="this.src='../images/placeholder.jpg'">
+                        <h3>${product.name}</h3>
+                        <div class="price">$${parseFloat(product.price).toFixed(2)}</div>
+                        <a href="#">Learn More</a>
+                    `;
+                    productList.appendChild(card);
+                });
+            } else {
+                productList.innerHTML = '<div style="grid-column: 1/-1; text-align:center;">No products found</div>';
+            }
+        })
+        .catch(err => {
+            productList.innerHTML = '<div style="grid-column: 1/-1; text-align:center; color:red;">Failed to load products</div>';
+        });
+    });
+    </script>
+    <script src="../js/session.js"></script>
 </body>
 </html>

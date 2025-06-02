@@ -53,11 +53,27 @@ function toggleLoginType(type) {
 // Form submission handlers
 document.addEventListener('DOMContentLoaded', function() {
   // User login form submission
-  document.getElementById('login-form').addEventListener('submit', function(e) {
+  document.getElementById('login-form').addEventListener('submit', async function(e) {
     e.preventDefault();
-    // In a real application, you would validate credentials with a server
-    // For this demo, just redirect to the main page
-    window.location.href = 'web.html';
+    const inputs = this.querySelectorAll('input');
+    const username = inputs[0].value.trim();
+    const password = inputs[1].value;
+    try {
+      const res = await fetch('http://localhost:5000/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password })
+      });
+      const data = await res.json();
+      if (data.success) {
+        localStorage.setItem('isLoggedIn', 'true');
+        window.location.href = 'web.html';
+      } else {
+        alert(data.message || 'Login failed, please try again.');
+      }
+    } catch (err) {
+      alert('Network error. Please try again.');
+    }
   });
   
   // Admin login form submission
@@ -70,11 +86,30 @@ document.addEventListener('DOMContentLoaded', function() {
   });
   
   // Signup form submission
-  document.getElementById('signup-form').addEventListener('submit', function(e) {
+  document.getElementById('signup-form').addEventListener('submit', async function(e) {
     e.preventDefault();
-    // In a real application, you would send the signup data to a server
-    // For this demo, just redirect to the main page
-    alert('Account created successfully!');
-    window.location.href = 'web.html';
+    const inputs = this.querySelectorAll('input');
+    const first_name = inputs[0].value.trim();
+    const last_name = inputs[1].value.trim();
+    const email = inputs[2].value.trim();
+    const phone = inputs[3].value.trim();
+    const password = inputs[4].value;
+    try {
+      const res = await fetch('http://localhost:5000/signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ first_name, last_name, email, phone, password })
+      });
+      const data = await res.json();
+      if (data.success) {
+        localStorage.setItem('isLoggedIn', 'true');
+        alert('Account created successfully!');
+        window.location.href = 'web.html';
+      } else {
+        alert(data.message || 'Signup failed.');
+      }
+    } catch (err) {
+      alert('Network error. Please try again.');
+    }
   });
 }); 
