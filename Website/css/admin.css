@@ -248,24 +248,66 @@ select {
 .data-table th, .data-table td {
   padding: 12px 15px;
   text-align: left;
-  border-bottom: 1px solid #ddd;
 }
-.data-table th {
-  background-color: #f5f5f5;
-  font-weight: 600;
+
+/* Alert messages */
+#message-container {
+  margin-bottom: 20px;
 }
+
+.alert {
+  padding: 12px 15px;
+  border-radius: 4px;
+  margin-bottom: 15px;
+}
+
+.alert-success {
+  background-color: #d1e7dd;
+  color: #0f5132;
+  border: 1px solid #badbcc;
+}
+
+.alert-danger {
+  background-color: #f8d7da;
+  color: #842029;
+  border: 1px solid #f5c2c7;
+}
+
+.admin-header {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 20px;
+}
+
+.admin-info {
+  font-size: 0.9rem;
+}
+
+.btn-link {
+  background: none;
+  border: none;
+  color: #007bff;
+  cursor: pointer;
+  font-size: 0.9rem;
+  padding: 0;
+  text-decoration: underline;
+}
+
+/* Category pills */
 .category-pill {
   display: inline-block;
-  padding: 3px 10px;
-  border-radius: 12px;
-  font-size: 0.75rem;
-  background: #e9ecef;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: 500;
 }
+
 .pill-phone { background: #cfe2ff; color: #084298; }
 .pill-tablet { background: #d1e7dd; color: #0f5132; }
 .pill-laptop { background: #f8d7da; color: #842029; }
 .pill-watch { background: #fff3cd; color: #664d03; }
 .pill-accessories { background: #e2e3e5; color: #41464b; }
+
 @media print {
   body * {
     visibility: hidden;

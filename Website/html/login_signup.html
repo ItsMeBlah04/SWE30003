@@ -6,19 +6,26 @@
   <title>Electrik | Login / Sign Up</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../css/user.css">
+  
+  <!-- Include model classes -->
+  <script src="../js/models/BaseModel.js"></script>
+  <script src="../js/models/Admin.js"></script>
+  
+  <!-- Include service classes -->
+  <script src="../js/services/AuthService.js"></script>
 </head>
 <body>
   <header>
-        <div><strong>Electrik</strong></div>
-        <nav>
-            <a href="web.html">Home</a>
-            <a href="#">About</a>
-            <a href="product.html">Products</a>
-            <a href="#">Contact</a>
-            <a href="checkout.html">Checkout</a>
-			<a href="track_order.html">Track Order</a>
-            <a href="login_signup.html" class="btn">Login</a>
-        </nav>
+    <div><strong>Electrik</strong></div>
+    <nav>
+      <a href="web.html">Home</a>
+      <a href="#">About</a>
+      <a href="product.html">Products</a>
+      <a href="#">Contact</a>
+      <a href="checkout.html">Checkout</a>
+      <a href="track_order.html">Track Order</a>
+      <a href="login_signup.html" class="btn">Login</a>
+    </nav>
   </header>
 
   <div class="container">
@@ -55,8 +62,11 @@
     </form>
 
     <div class="toggle-link" onclick="toggleForms()">Don't have an account? Sign Up</div>
+    
+    <div id="message-container"></div>
   </div>
 
+  <!-- Include page-specific scripts -->
   <script src="../js/auth.js"></script>
   <script src="../js/session.js"></script>
 </body>

@@ -1,76 +1,74 @@
-// session.js
-// Handles login/logout button state and session management
+/**
+ * Session Management
+ * Handles session-related functionality
+ */
 
+// Check if user is logged in on page load
 document.addEventListener('DOMContentLoaded', function() {
-  const btn = document.getElementById('login-logout-btn');
-  if (!btn) return;
+  updateLoginLogoutButton();
+  updateWelcomeMessage();
+});
 
-  // Check login state (localStorage)
-  function isLoggedIn() {
-    return localStorage.getItem('isLoggedIn') === 'true';
+// Update the login/logout button based on authentication status
+function updateLoginLogoutButton() {
+  const loginLogoutBtn = document.getElementById('login-logout-btn');
+  
+  if (!loginLogoutBtn) {
+    return;
   }
-
-  function setLoggedOut() {
-    localStorage.removeItem('isLoggedIn');
-    btn.textContent = 'Login';
-    btn.setAttribute('href', 'login_signup.html');
-    btn.onclick = null;
-  }
-
-  function setLoggedIn() {
-    btn.textContent = 'Logout';
-    btn.removeAttribute('href');
-    btn.onclick = function(e) {
-      e.preventDefault();
-      localStorage.removeItem('isLoggedIn');
-      location.reload();
-    };
-  }
-
-  // Set initial state
-  if (isLoggedIn()) {
-    setLoggedIn();
+  
+  // Check if user is authenticated
+  const isAdminAuthenticated = sessionStorage.getItem('isAuthenticated') === 'true';
+  const isCustomerAuthenticated = sessionStorage.getItem('isCustomerAuthenticated') === 'true';
+  
+  if (isAdminAuthenticated || isCustomerAuthenticated) {
+    // User is logged in
+    loginLogoutBtn.textContent = 'Logout';
+    loginLogoutBtn.href = '#';
+    loginLogoutBtn.onclick = logout;
   } else {
-    setLoggedOut();
+    // User is not logged in
+    loginLogoutBtn.textContent = 'Login';
+    loginLogoutBtn.href = 'login_signup.html';
+    loginLogoutBtn.onclick = null;
   }
+}
 
-  // Listen for login event from auth.js
-  window.addEventListener('user-logged-in', function() {
-    localStorage.setItem('isLoggedIn', 'true');
-    setLoggedIn();
-  });
-
-  // Session timeout (30 minutes = 1800000 ms)
-  const SESSION_TIMEOUT = 30 * 60 * 1000;
-  let timeoutId = null;
-
-  function startSessionTimer() {
-    clearSessionTimer();
-    timeoutId = setTimeout(() => {
-      // On timeout, log out and redirect to login
-      localStorage.removeItem('isLoggedIn');
-      setLoggedOut();
-      window.location.href = 'login_signup.html';
-    }, SESSION_TIMEOUT);
+// Update welcome message if admin is logged in
+function updateWelcomeMessage() {
+  const adminNameElement = document.getElementById('admin-name');
+  
+  if (!adminNameElement) {
+    return;
   }
-
-  function clearSessionTimer() {
-    if (timeoutId) clearTimeout(timeoutId);
-  }
-
-  function resetSessionTimer() {
-    if (isLoggedIn()) {
-      startSessionTimer();
+  
+  // Check if admin is authenticated
+  const isAdminAuthenticated = sessionStorage.getItem('isAuthenticated') === 'true';
+  
+  if (isAdminAuthenticated) {
+    // Admin is logged in
+    const adminName = sessionStorage.getItem('admin_name');
+    adminNameElement.textContent = adminName || 'Admin';
+    
+    // Setup logout button
+    const logoutBtn = document.getElementById('logout-btn');
+    if (logoutBtn) {
+      logoutBtn.addEventListener('click', logout);
     }
   }
+}
 
-  // Reset timer on user activity
-  ['mousemove', 'keydown', 'scroll', 'click'].forEach(event => {
-    window.addEventListener(event, resetSessionTimer, true);
-  });
-
-  // If logged in, start timer
-  if (isLoggedIn()) {
-    startSessionTimer();
-  }
-}); 
+// Logout function
+function logout() {
+  // Clear session storage
+  sessionStorage.removeItem('admin_id');
+  sessionStorage.removeItem('admin_name');
+  sessionStorage.removeItem('admin_email');
+  sessionStorage.removeItem('isAuthenticated');
+  sessionStorage.removeItem('customer_id');
+  sessionStorage.removeItem('customer_name');
+  sessionStorage.removeItem('isCustomerAuthenticated');
+  
+  // Redirect to login page
+  window.location.href = 'login_signup.html';
+} 
