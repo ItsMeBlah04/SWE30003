@@ -45,7 +45,10 @@
                         <img src="${product.image}" alt="${product.name}" onerror="this.src='../images/placeholder.jpg'">
                         <h3>${product.name}</h3>
                         <div class="price">$${parseFloat(product.price).toFixed(2)}</div>
-                        <a href="#">Learn More</a>
+                        <div class="product-actions">
+                          <a href="#">Learn More</a>
+                          <button class="add-to-cart-btn" data-product-id="${product.ProductID}">Add to Cart</button>
+                        </div>
                     `;
                     productList.appendChild(card);
                 });

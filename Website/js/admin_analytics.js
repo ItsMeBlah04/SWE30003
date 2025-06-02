@@ -89,7 +89,7 @@ function loadAnalyticsData(filters = {}) {
   
   // Prepare URL with query parameters
   // Use the PHP endpoint in XAMPP
-  let url = '../api/analytics.php';
+  let url = 'http://localhost:5000/admin_analytics';
   const params = new URLSearchParams();
   
   if (filters.month) params.append('month', filters.month);

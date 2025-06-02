@@ -14,7 +14,7 @@ def get_db_connection():
     conn.row_factory = sqlite3.Row
     return conn
 
-@app.route('/api/analytics', methods=['GET'])
+@app.route('/admin_analytics', methods=['GET'])
 def get_analytics_data():
     # Get filter parameters
     month = request.args.get('month', 'all')

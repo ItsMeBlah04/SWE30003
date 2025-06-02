@@ -191,3 +191,24 @@ button {
 .form-group {
     margin-bottom: 28px;
 } 
+/* Match textbox styles from login page */
+.customer-info input,
+.payment-method input {
+  margin-bottom: 25px;
+  padding: 12px;
+  width: 100%;
+  border-radius: 5px;
+  font-size: 1rem;
+  border: 1px solid #ccc;
+}
+.payment-method button {
+    background-color: #000;
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    padding: 12px;
+    width: 100%;
+    border-radius: 5px;
+    font-size: 1rem;
+  }
+  
