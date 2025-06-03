@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Electrik | Products</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/product.css">
+</head>
+<body>
+    <header>
+        <div><strong>Electrik</strong></div>
+    <nav>
+        <a href="web.html">Home</a>
+        <a href="#">About</a>
+        <a href="product.html">Products</a>
+        <a href="#">Contact</a>
+        <a href="checkout.html">Checkout</a>
+		<a href="track_order.html">Track Order</a>
+        <a href="login_signup.html" class="btn">Login</a>
+    </nav>
+    </header>
+
+    <section class="products-section">
+        <div id="product-list" class="product-grid"></div>
+    </section>
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const productList = document.getElementById('product-list');
+        productList.innerHTML = '<div style="grid-column: 1/-1; text-align:center;">Loading products...</div>';
+        const formData = new FormData();
+        formData.append('action', 'get_all');
+        fetch('http://localhost:5000/admin_update_product', {
+            method: 'POST',
+            body: formData
+        })
+        .then(res => res.json())
+        .then(data => {
+            productList.innerHTML = '';
+            if (data.success && data.products && data.products.length > 0) {
+                data.products.forEach(product => {
+                    const card = document.createElement('div');
+                    card.className = 'product-card';
+                    card.innerHTML = `
+                        <img src="${product.image}" alt="${product.name}" onerror="this.src='../images/placeholder.jpg'">
+                        <h3>${product.name}</h3>
+                        <div class="price">$${parseFloat(product.price).toFixed(2)}</div>
+                        <div class="product-actions">
+                          <a href="#">Learn More</a>
+                          <button class="add-to-cart-btn" data-product-id="${product.ProductID}">Add to Cart</button>
+                        </div>
+                    `;
+                    productList.appendChild(card);
+                });
+            } else {
+                productList.innerHTML = '<div style="grid-column: 1/-1; text-align:center;">No products found</div>';
+            }
+        })
+        .catch(err => {
+            productList.innerHTML = '<div style="grid-column: 1/-1; text-align:center; color:red;">Failed to load products</div>';
+        });
+    });
+    </script>
+    <script src="../js/session.js"></script>
+</body>
+</html>

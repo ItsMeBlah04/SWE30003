@@ -6,6 +6,46 @@
   <title>Electrik | Admin - Product Management</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../css/admin.css">
+  
+  <!-- Include model classes -->
+  <script src="../js/models/BaseModel.js"></script>
+  <script src="../js/models/Product.js"></script>
+  <script src="../js/models/Admin.js"></script>
+  
+  <!-- Include service classes -->
+  <script src="../js/services/AuthService.js"></script>
+  <script src="../js/services/ProductService.js"></script>
+
+  <style>
+    /* Anti-jiggling styles */
+    html, body {
+      height: 100%;
+      overflow: hidden;
+      margin: 0;
+      padding: 0;
+    }
+    .container {
+      height: calc(100% - 60px);
+      overflow-y: auto;
+      overflow-x: hidden;
+    }
+    table {
+      table-layout: fixed;
+      width: 100%;
+      border-collapse: collapse;
+    }
+    th, td {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      height: 60px;
+      padding: 8px;
+      vertical-align: middle;
+    }
+    .card {
+      margin-bottom: 50px;
+    }
+  </style>
 </head>
 <body>
   <header>
@@ -17,7 +57,7 @@
       <a href="web.html">Home</a>
       <a href="admin_products.html" class="btn">Products</a>
       <a href="admin_analytics.html">Analytics</a>
-      <a href="login_signup.html">Logout</a>
+      <a id="login-logout-btn" class="btn" href="login_signup.html">Login</a>
     </nav>
   </header>
 
@@ -29,7 +69,15 @@
 
     <div class="card">
       <h1>Product Catalog Management</h1>
-      <button class="btn-add" id="add-product-btn">+ Add New Product</button>
+      <div class="admin-header">
+        <button class="btn-add" id="add-product-btn">+ Add New Product</button>
+        <div class="admin-info">
+          Welcome, <span id="admin-name">Admin</span> | 
+          <button id="logout-btn" class="btn-link">Logout</button>
+        </div>
+      </div>
+      
+      <div id="message-container"></div>
 
       <div class="product-form" id="product-form">
         <h2 id="form-title">Add New Product</h2>
@@ -108,6 +156,8 @@
     </div>
   </div>
 
+  <!-- Include page-specific scripts -->
   <script src="../js/admin_products.js"></script>
+  <script src="../js/session.js"></script>
 </body>
 </html> 

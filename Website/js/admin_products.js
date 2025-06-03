@@ -1,8 +1,6 @@
-// API endpoints
-const API_URL = 'http://localhost:5000/admin_update_product';
-
-// Sample product data as fallback (will be replaced with data from the API)
-let products = [];
+// Initialize services
+const productService = new ProductService();
+const authService = new AuthService();
 
 // DOM Elements
 const productForm = document.getElementById('product-form');
@@ -17,67 +15,89 @@ const cancelDelete = document.getElementById('cancel-delete');
 const confirmDelete = document.getElementById('confirm-delete');
 const messageContainer = document.getElementById('message-container');
 
+// State
+let products = [];
 let currentProductId = null;
 
 // Initialize
 document.addEventListener('DOMContentLoaded', function() {
+  // Check if user is authenticated
+  authService.checkAuthRequired();
+  
+  // Setup UI based on authentication
+  setupUI();
+  
+  // Load products
   loadProducts();
+  
+  // Setup event listeners
   setupEventListeners();
 });
+
+// Setup UI based on authentication
+function setupUI() {
+  const admin = authService.currentAdmin;
+  
+  if (admin) {
+    // Show admin name if available
+    const adminNameElement = document.getElementById('admin-name');
+    if (adminNameElement) {
+      adminNameElement.textContent = admin.name;
+    }
+    
+    // Setup logout button
+    const logoutBtn = document.getElementById('logout-btn');
+    if (logoutBtn) {
+      logoutBtn.addEventListener('click', function() {
+        authService.logout();
+      });
+    }
+  }
+}
 
 // Load products from the database
 function loadProducts() {
   // Show loading indicator
   productList.innerHTML = '<tr><td colspan="7" style="text-align: center;">Loading products...</td></tr>';
   
-  const formData = new FormData();
-  formData.append('action', 'get_all');
-  
-  fetch(API_URL, {
-    method: 'POST',
-    body: formData
-  })
-  .then(response => response.json())
-  .then(data => {
-    if (data.success) {
-      products = data.products;
+  productService.getAllProducts()
+    .then(loadedProducts => {
+      products = loadedProducts;
       displayProducts();
-    } else {
-      showMessage(data.message || 'Error loading products', false);
+    })
+    .catch(error => {
+      console.error('Failed to load products:', error);
+      showMessage('Failed to load products: ' + error, false);
       productList.innerHTML = '<tr><td colspan="7" style="text-align: center;">Failed to load products</td></tr>';
-    }
-  })
-  .catch(error => {
-    console.error('Failed to load products:', error);
-    showMessage('Network error: ' + error, false);
-    productList.innerHTML = '<tr><td colspan="7" style="text-align: center;">Failed to load products</td></tr>';
-  });
+    });
 }
 
 // Setup event listeners
 function setupEventListeners() {
   addProductBtn.addEventListener('click', showAddProductForm);
   cancelBtn.addEventListener('click', hideProductForm);
-  document.getElementById('productForm').addEventListener('submit', saveProduct);
+  
+  // Fix form submission handling
+  const productFormElement = document.getElementById('productForm');
+  productFormElement.addEventListener('submit', function(e) {
+    e.preventDefault(); // Prevent form submission
+    saveProduct(e);
+  });
+  
   closeModal.addEventListener('click', hideDeleteModal);
   cancelDelete.addEventListener('click', hideDeleteModal);
   confirmDelete.addEventListener('click', deleteConfirmed);
   
-  // Image preview
+  // Image preview - always use default.png
   document.getElementById('product-image').addEventListener('input', function(e) {
-    const imageUrl = e.target.value;
     const previewContainer = document.getElementById('image-preview-container');
     previewContainer.innerHTML = '';
     
-    if (imageUrl) {
-      const img = document.createElement('img');
-      img.src = imageUrl;
-      img.className = 'image-preview';
-      img.onerror = () => {
-        previewContainer.innerHTML = '<p style="color: red;">Invalid image URL</p>';
-      };
-      previewContainer.appendChild(img);
-    }
+    // Always show default.png
+    const img = document.createElement('img');
+    img.src = '../images/default.png';
+    img.className = 'image-preview';
+    previewContainer.appendChild(img);
   });
 }
 
@@ -95,7 +115,7 @@ function displayProducts() {
     
     row.innerHTML = `
       <td>${product.id}</td>
-      <td><img src="${product.image}" alt="${product.name}" width="50" height="50" onerror="this.src='../images/placeholder.jpg'"></td>
+      <td><img src="../images/default.png" alt="${product.name}" width="50" height="50"></td>
       <td>${product.name}</td>
       <td>${capitalizeFirstLetter(product.category || '')}</td>
       <td>$${parseFloat(product.price).toFixed(2)}</td>
@@ -147,18 +167,8 @@ function editProduct(id) {
   formTitle.textContent = 'Loading...';
   productForm.style.display = 'block';
   
-  const formData = new FormData();
-  formData.append('action', 'get_product');
-  formData.append('id', id);
-  
-  fetch(API_URL, {
-    method: 'POST',
-    body: formData
-  })
-  .then(response => response.json())
-  .then(data => {
-    if (data.success) {
-      const product = data.product;
+  productService.getProductById(id)
+    .then(product => {
       formTitle.textContent = 'Edit Product';
       currentProductId = product.id;
       
@@ -167,36 +177,36 @@ function editProduct(id) {
       document.getElementById('product-category').value = product.category || '';
       document.getElementById('product-price').value = product.price;
       document.getElementById('product-stock').value = product.stock;
-      document.getElementById('product-image').value = product.image;
+      document.getElementById('product-image').value = product.image || '';
       document.getElementById('product-description').value = product.description;
       
       // Show image preview
       const previewContainer = document.getElementById('image-preview-container');
       previewContainer.innerHTML = '';
-      if (product.image) {
-        const img = document.createElement('img');
-        img.src = product.image;
-        img.className = 'image-preview';
-        previewContainer.appendChild(img);
-      }
+      
+      // Always use default.png for preview
+      const img = document.createElement('img');
+      img.src = '../images/default.png';
+      img.className = 'image-preview';
+      previewContainer.appendChild(img);
       
       saveBtn.textContent = 'Save Changes';
-    } else {
+    })
+    .catch(error => {
       hideProductForm();
-      showMessage(data.message || 'Error retrieving product', false);
-    }
-  })
-  .catch(error => {
-    hideProductForm();
-    showMessage('Network error: ' + error, false);
-  });
+      showMessage(error, false);
+    });
 }
 
 // Save product (add new or update existing)
 function saveProduct(e) {
-  e.preventDefault();
+  if (e) {
+    e.preventDefault();
+  }
   
+  // Create product instance from form data
   const productData = {
+    id: currentProductId,
     name: document.getElementById('product-name').value,
     category: document.getElementById('product-category').value,
     price: parseFloat(document.getElementById('product-price').value),
@@ -205,52 +215,26 @@ function saveProduct(e) {
     description: document.getElementById('product-description').value
   };
   
-  const isUpdate = currentProductId !== null;
-  
-  if (isUpdate) {
-    productData.id = currentProductId;
-  }
+  const product = new Product(productData);
   
   // Disable the save button while processing
   saveBtn.disabled = true;
-  saveBtn.textContent = isUpdate ? 'Saving...' : 'Adding...';
+  saveBtn.textContent = currentProductId ? 'Saving...' : 'Adding...';
   
-  const formData = new FormData();
-  formData.append('action', isUpdate ? 'update' : 'create');
-  
-  // Add all product fields to the form data
-  for (const key in productData) {
-    formData.append(key, productData[key]);
-  }
-  
-  fetch(API_URL, {
-    method: 'POST',
-    body: formData
-  })
-  .then(response => response.json())
-  .then(data => {
-    if (data.success) {
-      // For new products, add the new ID to the product object
-      if (!isUpdate && data.id) {
-        productData.id = data.id;
-      }
-      
+  // Save product
+  productService.saveProduct(product)
+    .then(savedProduct => {
       hideProductForm();
-      showMessage(isUpdate ? 'Product updated successfully' : 'Product created successfully', true);
+      showMessage(currentProductId ? 'Product updated successfully' : 'Product created successfully', true);
       
       // Reload products from the server to ensure data consistency
       loadProducts();
-    } else {
+    })
+    .catch(error => {
       saveBtn.disabled = false;
-      saveBtn.textContent = isUpdate ? 'Save Changes' : 'Add Product';
-      showMessage(data.message || 'Error saving product', false);
-    }
-  })
-  .catch(error => {
-    saveBtn.disabled = false;
-    saveBtn.textContent = isUpdate ? 'Save Changes' : 'Add Product';
-    showMessage('Network error: ' + error, false);
-  });
+      saveBtn.textContent = currentProductId ? 'Save Changes' : 'Add Product';
+      showMessage(error, false);
+    });
 }
 
 // Show delete confirmation modal
@@ -265,49 +249,38 @@ function hideDeleteModal() {
   currentProductId = null;
 }
 
-// Delete product when confirmed
+// Delete product after confirmation
 function deleteConfirmed() {
   if (currentProductId) {
-    // Disable delete button while processing
-    confirmDelete.disabled = true;
+    // Show loading state
     confirmDelete.textContent = 'Deleting...';
+    confirmDelete.disabled = true;
     
-    const formData = new FormData();
-    formData.append('action', 'delete');
-    formData.append('id', currentProductId);
-    
-    fetch(API_URL, {
-      method: 'POST',
-      body: formData
-    })
-    .then(response => response.json())
-    .then(data => {
-      hideDeleteModal();
-      
-      if (data.success) {
+    productService.deleteProduct(currentProductId)
+      .then(() => {
+        hideDeleteModal();
         showMessage('Product deleted successfully', true);
-        // Reload products from the server
+        
+        // Reload products
         loadProducts();
-      } else {
-        showMessage(data.message || 'Error deleting product', false);
-      }
-    })
-    .catch(error => {
-      hideDeleteModal();
-      showMessage('Network error: ' + error, false);
-    });
+      })
+      .catch(error => {
+        hideDeleteModal();
+        showMessage(error, false);
+      })
+      .finally(() => {
+        confirmDelete.textContent = 'Delete';
+        confirmDelete.disabled = false;
+      });
   }
 }
 
-// Display messages
+// Show message to user
 function showMessage(message, isSuccess) {
-  const messageClass = isSuccess ? 'success' : 'error';
-  if (messageContainer) {
-    messageContainer.innerHTML = `<div class="message ${messageClass}">${message}</div>`;
-    setTimeout(function() {
-      messageContainer.innerHTML = '';
-    }, 5000);
-  }
+  messageContainer.innerHTML = `<div class="${isSuccess ? 'success' : 'error'}">${message}</div>`;
+  setTimeout(() => {
+    messageContainer.innerHTML = '';
+  }, isSuccess ? 3000 : 5000);
 }
 
 // Helper function to capitalize first letter

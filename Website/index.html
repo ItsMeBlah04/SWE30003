@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Electrik - Electronics Store</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/user.css">
+    
+    <!-- Include model classes -->
+    <script src="js/models/BaseModel.js"></script>
+    <script src="js/models/Product.js"></script>
+    <script src="js/models/Admin.js"></script>
+    <script src="js/models/Order.js"></script>
+    <script src="js/models/OrderItem.js"></script>
+    <script src="js/models/SalesReport.js"></script>
+    
+    <!-- Include service classes -->
+    <script src="js/services/AuthService.js"></script>
+    <script src="js/services/ProductService.js"></script>
+    <script src="js/services/AnalyticsService.js"></script>
+    
+    <!-- Include main script -->
+    <script src="js/main.js"></script>
+    
+    <!-- Include page-specific scripts -->
+    <script src="js/session.js"></script>
+</head>
+<body>
+    <header>
+        <div>
+            <a href="index.html">
+                <strong>Electrik</strong>
+            </a>
+        </div>
+        <nav>
+            <a href="index.html">Home</a>
+            <a href="#">About</a>
+            <a href="html/product.html">Products</a>
+            <a href="#">Contact</a>
+            <a href="html/checkout.html">Checkout</a>
+            <a href="html/track_order.html">Track Order</a>
+            <a href="html/login_signup.html" id="login-link">Login</a>
+        </nav>
+    </header>
+    
+    <section>
+        <div class="text-block">
+            <p>Welcome to Electrik</p>
+            <h1>Your One-Stop Electronics Shop</h1>
+            <p>Discover the latest in technology with our premium selection of electronics products. Quality devices at competitive prices.</p>
+            <a href="html/product.html">
+                <button>Explore Products</button>
+            </a>
+        </div>
+        <div class="image-block">
+            <img src="images/smart device.jpg" alt="Smart Device" />
+        </div>
+    </section>
+    
+    <section>
+        <div class="image-block">
+            <img src="images/apple watch ultra.jpg" alt="Smart Watch" />
+        </div>
+        <div class="text-block">
+            <h2>Enhance Your Digital Experience</h2>
+            <p>Seamless digital integration for smart productivity, lifestyle enhancements, and more.</p>
+            <a href="html/product.html" class="btn">
+                <button>Shop Now</button>
+            </a>
+        </div>
+    </section>
+    
+    <section>
+        <div class="text-block">
+            <h2>Unleash the Power of Smart Tech</h2>
+            <p>Explore the future with our connected lifestyle products and enjoy seamless smart living.</p>
+            <a href="html/product.html" class="btn">
+                <button>Shop Now</button>
+            </a>
+        </div>
+        <div class="image-block">
+            <img src="images/airpods.jfif" alt="Smart Devices" />
+        </div>
+    </section>
+    
+    <div class="footer">
+        <div>
+            <p><strong>Resources</strong></p>
+            <a href="#">FAQs</a>
+            <a href="#">Support</a>
+            <a href="#">Terms</a>
+            <a href="#">Privacy</a>
+        </div>
+        <div>
+            <p><strong>Company</strong></p>
+            <a href="#">About Us</a>
+            <a href="#">Careers</a>
+            <a href="#">Press</a>
+            <a href="#">Partnerships</a>
+        </div>
+        <div>
+            <p><strong>Connect</strong></p>
+            <a href="#">Facebook</a>
+            <a href="#">Twitter</a>
+            <a href="#">Instagram</a>
+            <a href="#">LinkedIn</a>
+        </div>
+    </div>
+    
+    <script>
+        // Check if user is logged in
+        document.addEventListener('DOMContentLoaded', function() {
+            const loginLink = document.getElementById('login-link');
+            
+            if (sessionStorage.getItem('isAuthenticated') === 'true' || 
+                sessionStorage.getItem('isCustomerAuthenticated') === 'true') {
+                // User is logged in
+                if (sessionStorage.getItem('isAuthenticated') === 'true') {
+                    // Admin is logged in
+                    loginLink.textContent = 'Admin Dashboard';
+                    loginLink.href = 'html/admin_products.html';
+                } else {
+                    // Customer is logged in
+                    const customerName = sessionStorage.getItem('customer_name');
+                    loginLink.textContent = customerName || 'My Account';
+                    loginLink.href = 'html/web.html';
+                }
+            }
+        });
+    </script>
+</body>
+</html> 
