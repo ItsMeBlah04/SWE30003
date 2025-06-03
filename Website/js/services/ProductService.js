@@ -4,7 +4,7 @@
  */
 class ProductService {
     constructor() {
-        this.apiUrl = '../php/products.php';
+        this.apiUrl = '../php/productHandle.php';
     }
 
     /**
@@ -23,7 +23,12 @@ class ProductService {
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    const products = data.products.map(productData => new Product(productData));
+                    const products = data.products.map(productData => {
+                        const product = new Product(productData);
+                        // Ensure ID is set correctly from product_id
+                        product.id = productData.product_id || productData.id;
+                        return product;
+                    });
                     resolve(products);
                 } else {
                     reject(data.message || 'Error loading products');
@@ -54,6 +59,8 @@ class ProductService {
             .then(data => {
                 if (data.success) {
                     const product = new Product(data.product);
+                    // Ensure id is set correctly
+                    product.id = data.product.product_id || data.product.id;
                     resolve(product);
                 } else {
                     reject(data.message || 'Error getting product');
