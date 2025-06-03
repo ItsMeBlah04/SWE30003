@@ -228,7 +228,7 @@ class AnalyticsService {
         if (filters.month && filters.month !== 'all') {
             // Use the year from filters or default to current year
             const month = parseInt(filters.month) - 1; // JavaScript months are 0-11
-            const year = filters.year ? parseInt(filters.year) : new Date().getFullYear();
+            const year = filters.year ? parseInt(filters.year) : 2024; // Default to 2024
             
             // Start date is first day of month
             startDate = new Date(year, month, 1);
@@ -242,10 +242,10 @@ class AnalyticsService {
                 startDate = new Date(year, 0, 1);
                 endDate = new Date(year, 11, 31);
             } else {
-                // Default to current year if no specific filters
-                const currentYear = new Date().getFullYear();
-                startDate = new Date(currentYear, 0, 1);  // Jan 1, current year
-                endDate = new Date(currentYear, 11, 31);  // Dec 31, current year
+                // Default to 2024 if no specific filters
+                const year = 2024;
+                startDate = new Date(year, 0, 1);  // Jan 1, 2024
+                endDate = new Date(year, 11, 31);  // Dec 31, 2024
             }
         }
         

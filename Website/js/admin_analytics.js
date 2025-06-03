@@ -204,23 +204,35 @@ class DashboardManager {
       
       // Update summary stats
       const summary = report.summary || {};
-      this.elements.totalRevenue.textContent = '$' + 
-        (parseFloat(summary.total_sales || 0)).toLocaleString();
       
-      this.elements.totalOrders.textContent = 
-        (parseInt(summary.total_orders || 0)).toLocaleString();
-      
-      // Calculate average order value if available
-      let avgOrder = summary.average_order_value || 0;
-      if (!avgOrder && summary.total_orders > 0) {
-        avgOrder = summary.total_sales / summary.total_orders;
+      // If summary is false or null, show zeros
+      if (!summary || summary === false) {
+        this.elements.totalRevenue.textContent = '$0';
+        this.elements.totalOrders.textContent = '0';
+        this.elements.avgOrder.textContent = '$0';
+        this.elements.conversionRate.textContent = '0%';
+        
+        // Show message to user
+        this.showMessage('No sales data available for the selected period', false);
+      } else {
+        this.elements.totalRevenue.textContent = '$' + 
+          (parseFloat(summary.total_sales || 0)).toLocaleString();
+        
+        this.elements.totalOrders.textContent = 
+          (parseInt(summary.total_orders || 0)).toLocaleString();
+        
+        // Calculate average order value if available
+        let avgOrder = summary.average_order_value || 0;
+        if (!avgOrder && summary.total_orders > 0) {
+          avgOrder = summary.total_sales / summary.total_orders;
+        }
+        
+        this.elements.avgOrder.textContent = '$' + 
+          (parseFloat(avgOrder)).toLocaleString(undefined, {maximumFractionDigits: 2});
+        
+        // Placeholder for conversion rate (would normally come from actual data)
+        this.elements.conversionRate.textContent = '3.2%';
       }
-      
-      this.elements.avgOrder.textContent = '$' + 
-        (parseFloat(avgOrder)).toLocaleString(undefined, {maximumFractionDigits: 2});
-      
-      // Placeholder for conversion rate (would normally come from actual data)
-      this.elements.conversionRate.textContent = '3.2%';
       
       // Update charts
       this.updateCharts(report);
@@ -257,16 +269,25 @@ class DashboardManager {
       
       // Update category distribution chart
       if (this.categoryChart && report.category_sales) {
+        console.log('Category sales data:', report.category_sales);
+        
         // Extract category data
         const categories = [];
         const values = [];
         
-        report.category_sales.forEach(cat => {
-          if (cat.category && cat.total_revenue) {
-            categories.push(this.capitalizeFirstLetter(cat.category));
-            values.push(parseFloat(cat.total_revenue));
-          }
-        });
+        // Handle empty or null category_sales
+        if (report.category_sales && report.category_sales.length > 0) {
+          report.category_sales.forEach(cat => {
+            if (cat && cat.category && cat.total_revenue) {
+              categories.push(this.capitalizeFirstLetter(cat.category));
+              values.push(parseFloat(cat.total_revenue));
+            }
+          });
+        } else {
+          // Default categories if no data
+          categories.push('No Data');
+          values.push(100);
+        }
         
         // Update chart data
         this.categoryChart.data.labels = categories;
@@ -299,9 +320,13 @@ class DashboardManager {
         return;
       }
       
+      console.log('Products data:', products);
+      
       // Sort products by revenue (descending)
       const sortedProducts = [...products].sort((a, b) => {
-        return parseFloat(b.total_revenue) - parseFloat(a.total_revenue);
+        const revenueA = parseFloat(a.total_revenue || 0);
+        const revenueB = parseFloat(b.total_revenue || 0);
+        return revenueB - revenueA;
       });
       
       // Take only top 5 products
@@ -313,8 +338,8 @@ class DashboardManager {
           // Ensure all values exist
           const name = product.name || 'Unknown Product';
           const category = product.category || 'other';
-          const units = typeof product.total_quantity === 'number' ? product.total_quantity : 0;
-          const revenue = typeof product.total_revenue === 'number' ? product.total_revenue : 0;
+          const units = parseInt(product.total_quantity || 0);
+          const revenue = parseFloat(product.total_revenue || 0);
           
           const row = document.createElement('tr');
           row.innerHTML = `
@@ -407,26 +432,26 @@ class DashboardManager {
    * Set default filter values
    */
   setDefaultFilters() {
-    // Set year to current year
+    // Set year to 2024
     const yearFilter = this.elements.filterYear;
     if (yearFilter) {
-      const currentYear = new Date().getFullYear();
+      const defaultYear = "2024";
       
-      // Find and select the current year option
+      // Find and select the 2024 option
       for (let i = 0; i < yearFilter.options.length; i++) {
-        if (yearFilter.options[i].value === currentYear.toString()) {
+        if (yearFilter.options[i].value === defaultYear) {
           yearFilter.selectedIndex = i;
           break;
         }
       }
       
-      // If current year option doesn't exist, add it
-      if (!Array.from(yearFilter.options).some(option => option.value === currentYear.toString())) {
+      // If 2024 option doesn't exist, add it
+      if (!Array.from(yearFilter.options).some(option => option.value === defaultYear)) {
         const option = document.createElement('option');
-        option.value = currentYear.toString();
-        option.textContent = currentYear.toString();
+        option.value = defaultYear;
+        option.textContent = defaultYear;
         yearFilter.appendChild(option);
-        yearFilter.value = currentYear.toString();
+        yearFilter.value = defaultYear;
       }
     }
     

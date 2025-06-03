@@ -25,7 +25,7 @@ class Analytics extends Query {
     public function getSalesSummary($startDate, $endDate) {
         return $this->selectOne(
             "SELECT 
-                COUNT(id) as total_orders,
+                COUNT(order_id) as total_orders,
                 SUM(total_amount) as total_sales,
                 AVG(total_amount) as average_order_value
             FROM Orders
@@ -50,7 +50,7 @@ class Analytics extends Query {
                 SUM(oi.quantity) as total_quantity,
                 SUM(oi.quantity * p.price) as total_revenue
             FROM Orders o
-            JOIN OrderItems oi ON o.order_id = oi.order_id
+            JOIN Orders_Item oi ON o.order_id = oi.order_id
             JOIN Product p ON oi.product_id = p.product_id
             WHERE o.date BETWEEN ? AND ?";
         
@@ -78,11 +78,11 @@ class Analytics extends Query {
         return $this->select(
             "SELECT 
                 p.category,
-                COUNT(oi.id) as total_orders,
+                COUNT(oi.order_item_id) as total_orders,
                 SUM(oi.quantity) as total_quantity,
                 SUM(oi.quantity * p.price) as total_revenue
             FROM Orders o
-            JOIN OrderItems oi ON o.order_id = oi.order_id
+            JOIN Orders_Item oi ON o.order_id = oi.order_id
             JOIN Product p ON oi.product_id = p.product_id
             WHERE o.date BETWEEN ? AND ?
             GROUP BY p.category
@@ -126,7 +126,7 @@ class Analytics extends Query {
         
         // Check if we have any sales data
         if (!$summary || ($summary['total_orders'] ?? 0) == 0) {
-            // No sales data found, create real test data in database
+            // No sales data found, create real test data
             $this->generateRealTestData();
             
             // Try getting data again with the newly inserted data
@@ -174,11 +174,19 @@ class Analytics extends Query {
         $products = $this->select("SELECT product_id, price FROM Product");
         
         if (empty($products)) {
-            // No products to create orders for
-            return false;
+            // No products to create orders for, generate sample products first
+            $this->generateSampleProducts();
+            
+            // Get the newly created products
+            $products = $this->select("SELECT product_id, price FROM Product");
+            
+            if (empty($products)) {
+                // Still no products, cannot proceed
+                return false;
+            }
         }
         
-        // Insert 100 random orders
+        // Insert random orders
         $startDate = strtotime('2024-01-01');
         $endDate = strtotime('2024-12-31');
         $orderCount = 0;
@@ -205,12 +213,11 @@ class Analytics extends Query {
                     
                     // Insert order
                     $orderResult = $this->execute(
-                        "INSERT INTO Orders (date, customer_name, customer_email, total_amount) 
-                         VALUES (?, ?, ?, ?)",
+                        "INSERT INTO Orders (customer_id, date, total_amount) 
+                         VALUES (?, ?, ?)",
                         [
+                            1, // Default customer ID
                             $orderDate,
-                            'Customer ' . ($orderCount + 1),
-                            'customer' . ($orderCount + 1) . '@example.com',
                             0 // Will update after adding items
                         ]
                     );
@@ -231,9 +238,9 @@ class Analytics extends Query {
                             
                             // Insert order item
                             $this->execute(
-                                "INSERT INTO OrderItems (order_id, product_id, quantity, price) 
-                                 VALUES (?, ?, ?, ?)",
-                                [$orderId, $productId, $quantity, $price]
+                                "INSERT INTO Orders_Item (order_id, product_id, quantity) 
+                                 VALUES (?, ?, ?)",
+                                [$orderId, $productId, $quantity]
                             );
                             
                             $totalAmount += ($price * $quantity);
