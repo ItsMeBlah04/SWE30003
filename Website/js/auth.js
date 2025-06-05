@@ -72,14 +72,9 @@ function setupForms() {
     const last_name = inputs[1].value.trim();
     const email = inputs[2].value.trim();
     const phone = inputs[3].value.trim();
-<<<<<<< Updated upstream
-    const password = inputs[4].value;
-    
-=======
     const address = inputs[4].value.trim();
     const password = inputs[5].value;
 
->>>>>>> Stashed changes
     // Disable submit button
     const submitBtn = this.querySelector('button[type="submit"]');
     const originalText = submitBtn.textContent;
