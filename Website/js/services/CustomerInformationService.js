@@ -23,7 +23,6 @@ class CustomerInformationService {
       })
         .then(response => response.json())
         .then(data => {
-          console.log("📦 Raw response data from PHP:", data);
           if (data.success) {
             resolve(data.data);  
           } else {
