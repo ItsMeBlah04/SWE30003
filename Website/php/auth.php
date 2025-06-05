@@ -21,7 +21,7 @@ class Authenticator extends Query {
     /**
      * Authenticate admin user
      * 
-     * @param string $username Admin username
+     * @param string $username Admin username (can be email or admin_id)
      * @param string $password Admin password
      * @return array|false Admin data if authenticated, false otherwise
      */
@@ -30,25 +30,34 @@ class Authenticator extends Query {
             // Log attempt
             error_log("Attempting to authenticate admin: $username");
             
-            // First check if the username exists in Authenticator table with admin_id
-            $auth = $this->selectOne(
-                "SELECT * FROM Authenticator WHERE username = ? AND admin_id IS NOT NULL AND admin_id > 0 LIMIT 1", 
-                [$username]
-            );
+            // Check if the input is an admin_id (numeric) or email
+            $isNumeric = is_numeric($username);
             
-            if (!$auth) {
-                error_log("Admin username not found or not linked to admin account: $username");
+            // Get admin directly from Admin table based on email or admin_id
+            if ($isNumeric) {
+                $admin = $this->selectOne(
+                    "SELECT * FROM Admin WHERE admin_id = ? LIMIT 1", 
+                    [$username]
+                );
+            } else {
+                $admin = $this->selectOne(
+                    "SELECT * FROM Admin WHERE email = ? LIMIT 1", 
+                    [$username]
+                );
+            }
+            
+            if (!$admin) {
+                error_log("Admin not found with " . ($isNumeric ? "admin_id" : "email") . ": $username");
                 return false;
             }
             
-            // Log found user details (except password)
-            $logDetails = $auth;
+            // Log found admin details (except password)
+            $logDetails = $admin;
             unset($logDetails['password_harsh']);
-            error_log("Found authenticator record: " . json_encode($logDetails));
+            error_log("Found admin record: " . json_encode($logDetails));
             
-            // Determine if we have password_harsh or just password in the table
-            $passwordField = isset($auth['password_harsh']) ? 'password_harsh' : 'password';
-            $storedHash = $auth[$passwordField];
+            // Get password hash from Admin table
+            $storedHash = $admin['password_harsh'];
             
             if (empty($storedHash)) {
                 error_log("Empty password hash for admin: $username");
@@ -82,24 +91,10 @@ class Authenticator extends Query {
             }
             
             if ($authenticated) {
-                // Get admin details
-                $admin = $this->selectOne(
-                    "SELECT * FROM Admin WHERE admin_id = ? LIMIT 1",
-                    [$auth['admin_id']]
-                );
-                
-                if (!$admin) {
-                    error_log("Admin record not found for ID: " . $auth['admin_id']);
-                    return false;
-                }
-                
-                // Merge admin data with auth data
-                $result = array_merge($auth, $admin);
-                
                 // Remove sensitive data
-                unset($result['password_harsh'], $result['password']);
+                unset($admin['password_harsh'], $admin['password']);
                 
-                return $result;
+                return $admin;
             }
             
             error_log("Invalid password for admin: $username");
@@ -297,9 +292,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     echo json_encode([
                         'success' => true,
                         'admin_id' => $admin['admin_id'],
-                        'name' => $admin['name'] ?? $admin['username'],
-                        'email' => $admin['email'] ?? 'admin@electrik.com',
-                        'username' => $admin['username']
+                        'name' => $admin['name'] ?? ($admin['email'] ?? $username),
+                        'email' => $admin['email'] ?? '',
+                        'username' => $username
                     ]);
                 } else {
                     // Authentication failed
