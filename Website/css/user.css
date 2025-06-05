@@ -66,9 +66,16 @@ section {
     cursor: pointer;
 }
 
+/* Reduce home page image size by 30% */
 .image-block img {
-    max-width: 100%;
+    max-width: 70%;
     border-radius: 10px;
+}
+
+.image-block {
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 .product-grid {
@@ -211,5 +218,32 @@ button {
     border-radius: 5px;
     font-size: 1rem;
   }
+
+/* About page specific styles */
+.about-section {
+    max-width: 700px;
+    margin: 0 auto;
+    text-align: center;
+    padding-top: 100px;
+}
+
+.about-slogan {
+    font-size: 2.8rem;
+    font-weight: 800;
+    margin-bottom: 0.5em;
+}
+
+.about-description {
+    font-size: 1.25rem;
+    margin-bottom: 2em;
+    text-align: center;
+}
+
+.about-section .btn {
+    display: inline-block;
+    margin: 0 auto;
+}
+
+  
 
   
