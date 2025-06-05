@@ -68,23 +68,21 @@ CREATE TABLE Customer (
   name VARCHAR(100),
   address VARCHAR(255),
   phone VARCHAR(20),
-  email VARCHAR(100),
-  password_harsh VARCHAR(255)
+  email VARCHAR(100)
 );
 
--- CREATE TABLE Authenticator (
---   authenticator_id INT PRIMARY KEY AUTO_INCREMENT,
---   customer_id INT NOT NULL,
---   admin_id INT NOT NULL,
---   username VARCHAR(50),
---   password_harsh VARCHAR(255)
--- );
+CREATE TABLE Authenticator (
+  authenticator_id INT PRIMARY KEY AUTO_INCREMENT,
+  customer_id INT NOT NULL,
+  admin_id INT NOT NULL,
+  username VARCHAR(50),
+  password_harsh VARCHAR(255)
+);
 
 CREATE TABLE Admin (
   admin_id INT PRIMARY KEY AUTO_INCREMENT,
   name VARCHAR(100),
-  email VARCHAR(100),
-  password_harsh VARCHAR(255)
+  email VARCHAR(100)
 );
 
 CREATE TABLE Notification (
