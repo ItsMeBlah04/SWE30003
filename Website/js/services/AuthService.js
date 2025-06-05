@@ -141,7 +141,10 @@ class AuthService {
             formData.append('last_name', customerData.last_name);
             formData.append('email', customerData.email);
             formData.append('phone', customerData.phone);
+            formData.append('address', customerData.address)
             formData.append('password', customerData.password);
+
+            // console.log("Address being sent:", customerData.address);
             
             // Send signup request to API
             fetch(this.apiUrl, {

@@ -1,4 +1,6 @@
 // Initialize services
+console.log('Initializing authentication service...');
+
 const authService = new AuthService();
 
 // DOM Elements
@@ -64,40 +66,38 @@ function setupForms() {
   // Signup form
   signupForm.addEventListener('submit', function(e) {
     e.preventDefault();
-    
+
     // Get form data
-    const inputs = this.querySelectorAll('input');
-    const first_name = inputs[0].value.trim();
-    const last_name = inputs[1].value.trim();
-    const email = inputs[2].value.trim();
-    const phone = inputs[3].value.trim();
-    const password = inputs[4].value;
-    
+    const first_name = signupForm.querySelector('input[name="first_name"]').value.trim();
+    const last_name = signupForm.querySelector('input[name="last_name"]').value.trim();
+    const email = signupForm.querySelector('input[name="email"]').value.trim();
+    const phone = signupForm.querySelector('input[name="phone"]').value.trim();
+    const address = signupForm.querySelector('input[name="address"]').value.trim();
+    const password = signupForm.querySelector('input[name="password"]').value;
+
     // Disable submit button
     const submitBtn = this.querySelector('button[type="submit"]');
     const originalText = submitBtn.textContent;
     submitBtn.disabled = true;
     submitBtn.textContent = 'Signing up...';
-    
+
     // Register new customer
     authService.registerCustomer({
       first_name,
       last_name,
       email,
       phone,
+      address, 
       password
     })
     .then(data => {
       showMessage('Account created successfully!', true);
-        
-      // Redirect to customer page
       window.location.href = 'web.html';
     })
     .catch(error => {
       showMessage(error, false);
     })
     .finally(() => {
-      // Re-enable submit button
       submitBtn.disabled = false;
       submitBtn.textContent = originalText;
     });
@@ -191,18 +191,20 @@ function loginAsCustomer(username, password, submitBtn, originalText) {
     .then(data => {
       showMessage('Login successful!', true);
       
-      // Redirect to customer page or specified redirect URL
+      localStorage.setItem('customer_id', data.customer_id);
+      localStorage.setItem('customer_name', data.name);
+      localStorage.setItem('customer_email', data.email);
+
       const redirectUrl = getRedirectUrl() || 'web.html';
       window.location.href = redirectUrl;
     })
     .catch(error => {
       showMessage(error, false);
-      
-      // Re-enable submit button
       submitBtn.disabled = false;
       submitBtn.textContent = originalText;
     });
 }
+
 
 // Check for redirect parameter
 function checkRedirect() {

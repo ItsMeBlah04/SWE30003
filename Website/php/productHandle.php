@@ -122,7 +122,7 @@ class ProductHandle {
         );
 
         if (!$success) {
-            return $this->response(false, 'Failed to create product.');
+            return $this->response(false, message: 'Failed to create product.');
         }
 
         return $this->response(true, 'Product created successfully');
