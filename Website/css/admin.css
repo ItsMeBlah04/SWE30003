@@ -108,6 +108,10 @@ tr:hover {
   background: #007bff;
   color: white;
 }
+.btn-edit-product {
+  background: #007bff;
+  color: white;
+}
 .btn-delete {
   background: #dc3545;
   color: white;
