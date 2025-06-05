@@ -94,6 +94,8 @@ const password = signupForm.querySelector('input[name="password"]').value;
     })
     .then(data => {
       showMessage('Account created successfully!', true);
+      localStorage.setItem('customer_id', data.customer_id);
+      localStorage.setItem('customer_name', data.name);
       window.location.href = 'web.html';
     })
     .catch(error => {
