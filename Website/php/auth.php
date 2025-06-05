@@ -183,6 +183,54 @@ class Authenticator extends Query {
             return false;
         }
     }
+
+    /**
+     * Register a new admin
+     * 
+     * @param array $data Admin data
+     * @return array|false New admin data if registered, false otherwise
+     */
+    public function registerAdmin($data) {
+        try {
+            $this->conn->begin_transaction();
+    
+            // Check if email exists in Admin table
+            $existingEmail = $this->selectOne("SELECT * FROM Admin WHERE email = ? LIMIT 1", [$data['email']]);
+            if ($existingEmail) {
+                $this->conn->rollback();
+                error_log("Admin registration failed - email already exists: " . $data['email']);
+                return ['error' => 'Email already exists'];
+            }
+    
+            // Check if password already exists in Admin table (ensure unique passwords)
+            $existingPassword = $this->selectOne("SELECT * FROM Admin WHERE password_harsh = ? LIMIT 1", [$data['password']]);
+            if ($existingPassword) {
+                $this->conn->rollback();
+                error_log("Admin registration failed - password already exists");
+                return ['error' => 'Password already exists. Please choose a different password.'];
+            }
+    
+            // Insert new admin
+            $this->execute(
+                "INSERT INTO Admin (name, email, password_harsh) VALUES (?, ?, ?)",
+                [$data['name'], $data['email'], $data['password']]
+            );
+    
+            $adminId = $this->conn->insert_id;
+            $this->conn->commit();
+    
+            error_log("Admin registered successfully: " . $data['email']);
+            return [
+                'admin_id' => $adminId,
+                'name' => $data['name'],
+                'email' => $data['email']
+            ];
+        } catch (Exception $e) {
+            $this->conn->rollback();
+            error_log("Admin registration error: " . $e->getMessage());
+            return false;
+        }
+    }
 }
 
 // Handle API requests
@@ -301,6 +349,44 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     echo json_encode([
                         'success' => false,
                         'message' => 'Registration failed. Email may already be registered.'
+                    ]);
+                }
+                break;
+            
+            case 'admin_signup':
+                // Get admin data from POST
+                $adminData = [
+                    'name' => $_POST['name'] ?? '',
+                    'email' => $_POST['email'] ?? '',
+                    'password' => $_POST['password'] ?? ''
+                ];
+                
+                // Validate required fields
+                if (empty($adminData['name']) || empty($adminData['email']) || empty($adminData['password'])) {
+                    echo json_encode([
+                        'success' => false,
+                        'message' => 'Missing required fields'
+                    ]);
+                    break;
+                }
+                
+                // Register admin
+                $newAdmin = $authenticator->registerAdmin($adminData);
+                
+                if ($newAdmin && !isset($newAdmin['error'])) {
+                    // Registration successful
+                    echo json_encode([
+                        'success' => true,
+                        'admin_id' => $newAdmin['admin_id'],
+                        'name' => $newAdmin['name'],
+                        'email' => $newAdmin['email']
+                    ]);
+                } else {
+                    // Registration failed
+                    $errorMessage = isset($newAdmin['error']) ? $newAdmin['error'] : 'Registration failed.';
+                    echo json_encode([
+                        'success' => false,
+                        'message' => $errorMessage
                     ]);
                 }
                 break;
