@@ -46,28 +46,40 @@ class ProductService {
      * @returns {Promise} Promise that resolves with Product instance
      */
     getProductById(id) {
+        console.log('ProductService: Getting product by ID:', id);
+        
         return new Promise((resolve, reject) => {
             const formData = new FormData();
             formData.append('action', 'get_product');
             formData.append('id', id);
             
+            console.log('ProductService: Sending request to:', this.apiUrl);
+            
             fetch(this.apiUrl, {
                 method: 'POST',
                 body: formData
             })
-            .then(response => response.json())
+            .then(response => {
+                console.log('ProductService: Response status:', response.status);
+                return response.json();
+            })
             .then(data => {
+                console.log('ProductService: Response data:', data);
+                
                 if (data.success) {
                     const product = new Product(data.product);
                     // Ensure id is set correctly
                     product.id = data.product.product_id || data.product.id;
+                    console.log('ProductService: Product created:', product);
                     resolve(product);
                 } else {
+                    console.error('ProductService: Error from server:', data.message);
                     reject(data.message || 'Error getting product');
                 }
             })
             .catch(error => {
-                reject('Network error: ' + error);
+                console.error('ProductService: Network error:', error);
+                reject('Network error: ' + error.message);
             });
         });
     }
@@ -78,39 +90,57 @@ class ProductService {
      * @returns {Promise} Promise that resolves with saved Product instance
      */
     saveProduct(product) {
+        console.log('ProductService: Saving product:', product);
+        
         return new Promise((resolve, reject) => {
             // Validate product
             const validation = product.validate();
             if (!validation.success) {
+                console.error('ProductService: Validation failed:', validation.message);
                 reject(validation.message);
                 return;
             }
             
-            const isUpdate = product.id !== null;
+            const isUpdate = product.id !== null && product.id !== undefined && product.id !== '';
+            console.log('ProductService: Is update operation:', isUpdate);
             
             // Create form data for request
             const formData = product.toFormData();
             formData.append('action', isUpdate ? 'update' : 'create');
             
+            // Log the form data being sent
+            console.log('ProductService: Form data to send:');
+            for (let [key, value] of formData.entries()) {
+                console.log(`  ${key}: ${value}`);
+            }
+            
             fetch(this.apiUrl, {
                 method: 'POST',
                 body: formData
             })
-            .then(response => response.json())
+            .then(response => {
+                console.log('ProductService: Save response status:', response.status);
+                return response.json();
+            })
             .then(data => {
+                console.log('ProductService: Save response data:', data);
+                
                 if (data.success) {
                     // For new products, add the new ID to the product object
                     if (!isUpdate && data.id) {
                         product.id = data.id;
+                        console.log('ProductService: New product ID assigned:', data.id);
                     }
                     
                     resolve(product);
                 } else {
+                    console.error('ProductService: Save error from server:', data.message);
                     reject(data.message || 'Error saving product');
                 }
             })
             .catch(error => {
-                reject('Network error: ' + error);
+                console.error('ProductService: Network error during save:', error);
+                reject('Network error: ' + error.message);
             });
         });
     }

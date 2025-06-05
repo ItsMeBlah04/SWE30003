@@ -84,12 +84,21 @@ class ProductHandle {
      * @return array Response data
      */
     private function getById($data) {
+        error_log("ProductHandle: getById called with data: " . print_r($data, true));
+        
         $id = (int)($data['id'] ?? 0);
-        if ($id <= 0) return $this->response(false, 'Invalid ID');
+        if ($id <= 0) {
+            error_log("ProductHandle: Invalid ID provided: " . $id);
+            return $this->response(false, 'Invalid ID');
+        }
 
         $product = $this->product->getProductById($id);
-        if (!$product) return $this->response(false, 'Product not found');
+        if (!$product) {
+            error_log("ProductHandle: Product not found for ID: " . $id);
+            return $this->response(false, 'Product not found');
+        }
 
+        error_log("ProductHandle: Product found: " . print_r($product, true));
         return $this->response(true, 'Product found', ['product' => $product]);
     }
 
@@ -135,8 +144,13 @@ class ProductHandle {
      * @return array Response data
      */
     private function update($data) {
+        error_log("ProductHandle: update called with data: " . print_r($data, true));
+        
         $id = (int)($data['id'] ?? 0);
-        if ($id <= 0) return $this->response(false, 'Invalid ID');
+        if ($id <= 0) {
+            error_log("ProductHandle: Invalid ID for update: " . $id);
+            return $this->response(false, 'Invalid ID');
+        }
 
         // Extract allowed fields
         $fields = array_intersect_key($data, array_flip([
@@ -149,17 +163,23 @@ class ProductHandle {
             $fields['manufacter'] = $data['manufacturer'];
         }
 
+        error_log("ProductHandle: Fields to update: " . print_r($fields, true));
+
         // Validate fields
         if (isset($fields['price']) && $fields['price'] < 0) {
+            error_log("ProductHandle: Invalid price: " . $fields['price']);
             return $this->response(false, 'Invalid price');
         }
         
         if (isset($fields['stock']) && $fields['stock'] < 0) {
+            error_log("ProductHandle: Invalid stock: " . $fields['stock']);
             return $this->response(false, 'Invalid stock');
         }
 
         // Update product
         $success = $this->product->updateProductByFields($id, $fields);
+        
+        error_log("ProductHandle: Update result: " . ($success ? 'success' : 'failure'));
 
         if (!$success) {
             return $this->response(false, 'Failed to update product or product not found.');
