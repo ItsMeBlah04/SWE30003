@@ -19,8 +19,9 @@
             <a href="product.html">Products</a>
             <a href="#">Contact</a>
             <a href="checkout.html">Checkout</a>
-			<a href="track_order.html">Track Order</a>
-            <a href="login_signup.html" class="btn">Login</a>
+            <a href="track_order.html" id="track-link" style="display: none;">Track Order</a>
+            <a href="#" id="logoutBtn" class="btn" style="display: none;">Logout</a>
+            <a href="login_signup.html" class="btn" id="loginBtn">Login</a>
         </nav>
     </header>
 
@@ -29,8 +30,9 @@
             <p>Discover the Latest Smart Home Automation</p>
             <h1>Elevate Your Living Space</h1>
             <p>Revolutionize your home with cutting-edge smart technology. Seamlessly integrate your devices and optimize efficiency.</p>
-            <a href = "product.html">
-            <button>Explore Products</button></a>
+            <a href="product.html">
+                <button>Explore Products</button>
+            </a>
         </div>
         <div class="image-block">
             <img src="../images/smart device.jpg" alt="Smart Device" />
@@ -44,7 +46,7 @@
         <div class="text-block">
             <h2>Enhance Your Digital Experience</h2>
             <p>Seamless digital integration for smart productivity, lifestyle enhancements, and more.</p>
-            <a href="product.html" class ="btn">
+            <a href="product.html" class="btn">
                 <button>Shop Now</button>
             </a>
         </div>
@@ -54,7 +56,7 @@
         <div class="text-block">
             <h2>Unleash the Power of Smart Tech</h2>
             <p>Explore the future with our connected lifestyle products and enjoy seamless smart living.</p>
-            <a href="product.html" class ="btn">
+            <a href="product.html" class="btn">
                 <button>Shop Now</button>
             </a>
         </div>
@@ -86,6 +88,30 @@
             <a href="#">LinkedIn</a>
         </div>
     </div>
-    <script src="../js/session.js"></script>
+
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        const customerId = localStorage.getItem('customer_id');
+        const trackLink = document.getElementById('track-link');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const loginBtn = document.getElementById('loginBtn');
+
+        if (customerId) {
+          if (trackLink) trackLink.style.display = 'inline-block';
+          if (logoutBtn) logoutBtn.style.display = 'inline-block';
+          if (loginBtn) loginBtn.style.display = 'none';
+
+          logoutBtn?.addEventListener('click', function(e) {
+            e.preventDefault();
+            localStorage.removeItem('customer_id');
+            window.location.href = 'login_signup.html';
+          });
+        } else {
+          if (trackLink) trackLink.style.display = 'none';
+          if (logoutBtn) logoutBtn.style.display = 'none';
+          if (loginBtn) loginBtn.style.display = 'inline-block';
+        }
+      });
+    </script>
 </body>
 </html>

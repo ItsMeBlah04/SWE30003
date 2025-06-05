@@ -4,14 +4,14 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>AWE Electronics | Login / Sign Up</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="../css/user.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../css/user.css" />
   
-  <!-- Include model classes -->
+  <!-- Model classes -->
   <script src="../js/models/BaseModel.js"></script>
   <script src="../js/models/Admin.js"></script>
   
-  <!-- Include service classes -->
+  <!-- Service classes -->
   <script src="../js/services/AuthService.js"></script>
 </head>
 <body>
@@ -19,12 +19,11 @@
     <div><strong>AWE Electronics</strong></div>
     <nav>
       <a href="web.html">Home</a>
-      <a href="#">About</a>
+      <a href="about.html">About</a>
       <a href="product.html">Products</a>
-      <a href="#">Contact</a>
       <a href="checkout.html">Checkout</a>
-      <a href="track_order.html">Track Order</a>
-      <a href="login_signup.html" class="btn">Login</a>
+      <a href="track_order.html" id="track-link" style="display:none;">Track Order</a>
+      <a href="login_signup.html" class="btn" id="login-logout-btn">Login</a>
     </nav>
   </header>
 
@@ -38,36 +37,111 @@
 
     <!-- User Login Form -->
     <form id="login-form">
-      <input type="text" placeholder="Email or Phone Number" required />
-      <input type="password" placeholder="Password" required />
+      <input type="text" name="username" placeholder="Email" required />
+      <input type="password" name="password" placeholder="Password" required />
       <button type="submit">Login</button>
     </form>
 
     <!-- Admin Login Form -->
     <form id="admin-login-form" style="display: none;">
-      <input type="text" placeholder="Admin Username" required />
-      <input type="password" placeholder="Admin Password" required />
+      <input type="text" name="username" placeholder="Admin Username" required />
+      <input type="password" name="password" placeholder="Admin Password" required />
       <p class="admin-note">For store administrators only</p>
       <button type="submit">Admin Login</button>
     </form>
 
     <!-- Sign Up Form -->
     <form id="signup-form" style="display: none;">
-      <input type="text" placeholder="First Name" required />
-      <input type="text" placeholder="Last Name" required />
-      <input type="email" placeholder="Email" required />
-      <input type="tel" placeholder="Phone Number" required />
-      <input type="password" placeholder="Password" required />
+      <input type="text" name="first_name" placeholder="First Name" required />
+      <input type="text" name="last_name" placeholder="Last Name" required />
+      <input type="email" name="email" placeholder="Email" required />
+      <input type="tel" name="phone" placeholder="Phone Number" required />
+      <input type="text" name="address" placeholder="Address" required /> 
+      <input type="password" name="password" placeholder="Password" required />
       <button type="submit">Sign Up</button>
     </form>
 
-    <div class="toggle-link" onclick="toggleForms()">Don't have an account? Sign Up</div>
-    
+    <div class="toggle-link" style="margin-top: 20px;">
+      <a href="javascript:void(0);" onclick="toggleForms()">Don't have an account? Sign Up</a>
+    </div>
+        
     <div id="message-container"></div>
   </div>
 
-  <!-- Include page-specific scripts -->
+  <!-- Page-specific scripts -->
   <script src="../js/auth.js"></script>
   <script src="../js/session.js"></script>
+
+  <script>
+    // Expose toggleForms globally for inline onclick
+    function toggleForms() {
+      const loginForm = document.getElementById('login-form');
+      const adminLoginForm = document.getElementById('admin-login-form');
+      const signupForm = document.getElementById('signup-form');
+      const title = document.getElementById('form-title');
+      const toggleLink = document.querySelector('.toggle-link a');
+
+      if (signupForm.style.display === 'none' || signupForm.style.display === '') {
+        loginForm.style.display = 'none';
+        adminLoginForm.style.display = 'none';
+        signupForm.style.display = 'block';
+        title.innerText = 'Sign Up';
+        toggleLink.textContent = 'Already have an account? Login';
+      } else {
+        signupForm.style.display = 'none';
+        loginForm.style.display = 'block';
+        adminLoginForm.style.display = 'none';
+        title.innerText = 'Login';
+        toggleLink.textContent = "Don't have an account? Sign Up";
+      }
+    }
+
+    // Expose toggleForms globally
+    window.toggleForms = toggleForms;
+
+    function toggleLoginType(type) {
+      const loginForm = document.getElementById('login-form');
+      const adminLoginForm = document.getElementById('admin-login-form');
+      const userToggle = document.getElementById('user-toggle');
+      const adminToggle = document.getElementById('admin-toggle');
+      const signupForm = document.getElementById('signup-form');
+
+      if (type === 'user') {
+        loginForm.style.display = 'block';
+        adminLoginForm.style.display = 'none';
+        signupForm.style.display = 'none';
+        userToggle.classList.add('active');
+        adminToggle.classList.remove('active');
+      } else {
+        loginForm.style.display = 'none';
+        adminLoginForm.style.display = 'block';
+        signupForm.style.display = 'none';
+        userToggle.classList.remove('active');
+        adminToggle.classList.add('active');
+      }
+    }
+    window.toggleLoginType = toggleLoginType;
+
+    // Navbar toggle based on login state
+    document.addEventListener('DOMContentLoaded', () => {
+      const customerId = localStorage.getItem('customer_id');
+      const trackLink = document.getElementById('track-link');
+      const loginLogoutBtn = document.getElementById('login-logout-btn');
+
+      if (customerId) {
+        if (trackLink) trackLink.style.display = 'inline-block';
+        if (loginLogoutBtn) loginLogoutBtn.textContent = 'Logout';
+
+        loginLogoutBtn?.addEventListener('click', (e) => {
+          e.preventDefault();
+          localStorage.removeItem('customer_id');
+          window.location.href = 'login_signup.html';
+        });
+      } else {
+        if (trackLink) trackLink.style.display = 'none';
+        if (loginLogoutBtn) loginLogoutBtn.textContent = 'Login';
+      }
+    });
+  </script>
 </body>
 </html>

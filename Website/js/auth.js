@@ -1,10 +1,13 @@
 // Initialize services
+console.log('Initializing authentication service...');
+
 const authService = new AuthService();
 
 // DOM Elements
 const loginForm = document.getElementById('login-form');
 const adminLoginForm = document.getElementById('admin-login-form');
 const signupForm = document.getElementById('signup-form');
+const adminSignupForm = document.getElementById('admin-signup-form');
 const userToggle = document.getElementById('user-toggle');
 const adminToggle = document.getElementById('admin-toggle');
 const messageContainer = document.getElementById('message-container');
@@ -64,40 +67,75 @@ function setupForms() {
   // Signup form
   signupForm.addEventListener('submit', function(e) {
     e.preventDefault();
-    
+
     // Get form data
-    const inputs = this.querySelectorAll('input');
-    const first_name = inputs[0].value.trim();
-    const last_name = inputs[1].value.trim();
-    const email = inputs[2].value.trim();
-    const phone = inputs[3].value.trim();
-    const password = inputs[4].value;
+    const first_name = signupForm.querySelector('input[name="first_name"]').value.trim();
+const last_name = signupForm.querySelector('input[name="last_name"]').value.trim();
+const email = signupForm.querySelector('input[name="email"]').value.trim();
+const phone = signupForm.querySelector('input[name="phone"]').value.trim();
+const address = signupForm.querySelector('input[name="address"]').value.trim();
+const password = signupForm.querySelector('input[name="password"]').value;
+
     
     // Disable submit button
     const submitBtn = this.querySelector('button[type="submit"]');
     const originalText = submitBtn.textContent;
     submitBtn.disabled = true;
     submitBtn.textContent = 'Signing up...';
-    
+
     // Register new customer
     authService.registerCustomer({
       first_name,
       last_name,
       email,
       phone,
+      address, 
       password
     })
     .then(data => {
       showMessage('Account created successfully!', true);
-        
-      // Redirect to customer page
       window.location.href = 'web.html';
     })
     .catch(error => {
       showMessage(error, false);
     })
     .finally(() => {
-      // Re-enable submit button
+      submitBtn.disabled = false;
+      submitBtn.textContent = originalText;
+    });
+  });
+
+  // Admin signup form
+  adminSignupForm.addEventListener('submit', function(e) {
+    e.preventDefault();
+
+    // Get form data
+    const inputs = this.querySelectorAll('input');
+    const name = inputs[0].value.trim();
+    const email = inputs[1].value.trim();
+    const password = inputs[2].value;
+
+    // Disable submit button
+    const submitBtn = this.querySelector('button[type="submit"]');
+    const originalText = submitBtn.textContent;
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Signing up...';
+
+    // Register new admin
+    authService.registerAdmin({
+      name,
+      email,
+      password
+    })
+    .then(data => {
+      showMessage('Admin account created successfully!', true);
+      // Switch back to login form after successful signup
+      toggleForms();
+    })
+    .catch(error => {
+      showMessage(error, false);
+    })
+    .finally(() => {
       submitBtn.disabled = false;
       submitBtn.textContent = originalText;
     });
@@ -107,9 +145,12 @@ function setupForms() {
 // Setup toggle functionality
 function setupToggles() {
   // Toggle between login and signup forms
-  const toggleLink = document.querySelector('.toggle-link');
+  const toggleLink = document.querySelector('.toggle-link a');
   if (toggleLink) {
-    toggleLink.addEventListener('click', toggleForms);
+    toggleLink.addEventListener('click', function(e) {
+      e.preventDefault();
+      toggleForms();
+    });
   }
   
   // Toggle between user and admin login
@@ -127,7 +168,7 @@ function setupToggles() {
 // Toggle between login and signup forms
 function toggleForms() {
   const title = document.getElementById('form-title');
-  const toggleLink = document.querySelector('.toggle-link');
+  const toggleLink = document.querySelector('.toggle-link a');
   const loginToggleDiv = document.querySelector('.login-toggle');
 
   if (loginForm.style.display === 'none' && adminLoginForm.style.display === 'none') {
@@ -135,32 +176,68 @@ function toggleForms() {
     loginForm.style.display = 'block';
     adminLoginForm.style.display = 'none';
     signupForm.style.display = 'none';
+    adminSignupForm.style.display = 'none';
     title.textContent = 'Login';
     toggleLink.textContent = "Don't have an account? Sign Up";
     loginToggleDiv.style.display = 'flex';
     userToggle.classList.add('active');
     adminToggle.classList.remove('active');
   } else {
-    // Show signup form
+    // Show signup form based on current toggle state
     loginForm.style.display = 'none';
     adminLoginForm.style.display = 'none';
-    signupForm.style.display = 'block';
+    
+    if (userToggle.classList.contains('active')) {
+      // Show customer signup
+      signupForm.style.display = 'block';
+      adminSignupForm.style.display = 'none';
+    } else {
+      // Show admin signup
+      signupForm.style.display = 'none';
+      adminSignupForm.style.display = 'block';
+    }
+    
     title.textContent = 'Sign Up';
     toggleLink.textContent = "Already have an account? Login";
-    loginToggleDiv.style.display = 'none';
+    loginToggleDiv.style.display = 'flex';  // Keep the toggle visible during signup
   }
 }
 
 // Toggle between user and admin login forms
 function toggleLoginType(type) {
+  const title = document.getElementById('form-title');
+  const isSignupMode = title.textContent === 'Sign Up';
+  
   if (type === 'user') {
-    loginForm.style.display = 'block';
-    adminLoginForm.style.display = 'none';
+    if (isSignupMode) {
+      // Show customer signup form
+      loginForm.style.display = 'none';
+      adminLoginForm.style.display = 'none';
+      signupForm.style.display = 'block';
+      adminSignupForm.style.display = 'none';
+    } else {
+      // Show customer login form
+      loginForm.style.display = 'block';
+      adminLoginForm.style.display = 'none';
+      signupForm.style.display = 'none';
+      adminSignupForm.style.display = 'none';
+    }
     userToggle.classList.add('active');
     adminToggle.classList.remove('active');
   } else {
-    loginForm.style.display = 'none';
-    adminLoginForm.style.display = 'block';
+    if (isSignupMode) {
+      // Show admin signup form
+      loginForm.style.display = 'none';
+      adminLoginForm.style.display = 'none';
+      signupForm.style.display = 'none';
+      adminSignupForm.style.display = 'block';
+    } else {
+      // Show admin login form
+      loginForm.style.display = 'none';
+      adminLoginForm.style.display = 'block';
+      signupForm.style.display = 'none';
+      adminSignupForm.style.display = 'none';
+    }
     userToggle.classList.remove('active');
     adminToggle.classList.add('active');
   }
@@ -191,18 +268,20 @@ function loginAsCustomer(username, password, submitBtn, originalText) {
     .then(data => {
       showMessage('Login successful!', true);
       
-      // Redirect to customer page or specified redirect URL
+      localStorage.setItem('customer_id', data.customer_id);
+      localStorage.setItem('customer_name', data.name);
+      localStorage.setItem('customer_email', data.email);
+
       const redirectUrl = getRedirectUrl() || 'web.html';
       window.location.href = redirectUrl;
     })
     .catch(error => {
       showMessage(error, false);
-      
-      // Re-enable submit button
       submitBtn.disabled = false;
       submitBtn.textContent = originalText;
     });
 }
+
 
 // Check for redirect parameter
 function checkRedirect() {

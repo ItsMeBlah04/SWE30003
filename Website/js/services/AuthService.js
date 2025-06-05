@@ -141,7 +141,10 @@ class AuthService {
             formData.append('last_name', customerData.last_name);
             formData.append('email', customerData.email);
             formData.append('phone', customerData.phone);
+            formData.append('address', customerData.address)
             formData.append('password', customerData.password);
+
+            // console.log("Address being sent:", customerData.address);
             
             // Send signup request to API
             fetch(this.apiUrl, {
@@ -194,6 +197,72 @@ class AuthService {
                     reject('Request timed out. Server may be busy or unresponsive.');
                 } else {
                     reject(error.message || 'Network error during registration');
+                }
+            });
+        });
+    }
+
+    /**
+     * Register a new admin
+     * @param {Object} adminData - Admin registration data
+     * @returns {Promise} Promise that resolves with new admin data
+     */
+    registerAdmin(adminData) {
+        return new Promise((resolve, reject) => {
+            // Create form data for request
+            const formData = new FormData();
+            formData.append('action', 'admin_signup');
+            formData.append('name', adminData.name);
+            formData.append('email', adminData.email);
+            formData.append('password', adminData.password);
+            
+            // Send admin signup request to API
+            fetch(this.apiUrl, {
+                method: 'POST',
+                body: formData,
+                // Add timeout to avoid hanging requests
+                signal: AbortSignal.timeout(10000) // 10 second timeout
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.text();
+            })
+            .then(text => {
+                // Check if text is empty
+                if (!text || text.trim() === '') {
+                    throw new Error('Empty response from server');
+                }
+                
+                // Try to parse as JSON
+                try {
+                    return JSON.parse(text);
+                } catch (e) {
+                    // If parsing fails, show the raw response
+                    console.error('Failed to parse response as JSON:', text);
+                    throw new Error('Server returned invalid JSON. Check console for details.');
+                }
+            })
+            .then(data => {
+                if (data && data.success) {
+                    resolve({
+                        success: true,
+                        admin_id: data.admin_id,
+                        name: data.name,
+                        email: data.email
+                    });
+                } else {
+                    reject(data?.message || 'Admin signup failed');
+                }
+            })
+            .catch(error => {
+                console.error('Admin registration error:', error);
+                
+                if (error.name === 'AbortError') {
+                    reject('Request timed out. Server may be busy or unresponsive.');
+                } else {
+                    reject(error.message || 'Network error during admin registration');
                 }
             });
         });

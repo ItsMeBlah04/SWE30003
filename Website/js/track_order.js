@@ -1,32 +1,70 @@
-const orders = {
-  "ORD101": {
-    trackingNumber: "TRK123456",
-    status: "Shipped"
-  },
-  "ORD102": {
-    trackingNumber: "TRK654321",
-    status: "Out for Delivery"
-  },
-  "ORD103": {
-    trackingNumber: "TRK987654",
-    status: "Delivered"
-  }
-};
+import TrackOrderService from './services/TrackOrderService.js';
+import { sendNotification } from './models/Notifier.js';  
 
-function trackOrder() {
-  const input = document.getElementById("orderId").value.trim().toUpperCase();
-  const resultDiv = document.getElementById("result");
+document.addEventListener('DOMContentLoaded', () => {
+  const form = document.getElementById('track-order-form');
+  const resultContainer = document.getElementById('result-container');
 
-  if (orders[input]) {
-    const order = orders[input];
-    resultDiv.innerHTML = `
-      <strong>Order ID:</strong> ${input}<br>
-      <strong>Tracking Number:</strong> ${order.trackingNumber}<br>
-      <strong>Status:</strong> ${order.status}<br>
-       <em>Your order <b>${input}</b> is currently "<b>${order.status}</b>".</em>
-    `;
-    resultDiv.style.color = "#000";
-  } else {
-    resultDiv.innerHTML = `<span style="color:red;">Order not found, please try again.</span>`;
-  }
-}
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const formData = new FormData(form);
+    const orderId = formData.get("order_id")?.trim() || "";
+    const name = formData.get("name")?.trim() || "";
+    const email = formData.get("email")?.trim() || "";
+    const phone = formData.get("phone")?.trim() || "";
+
+    resultContainer.innerHTML = 'Loading...';
+
+    try {
+      let response;
+
+      if (orderId !== '') {
+        response = await TrackOrderService.trackByOrderId(orderId);
+      } else if (name && (email || phone)) {
+        response = await TrackOrderService.trackByNameAndContact(name, email, phone);
+      } else {
+        resultContainer.innerHTML = '<p style="color: red">Please enter either Order ID, or Name + Email/Phone.</p>';
+        return;
+      }
+
+      if (response.error) {
+        resultContainer.innerHTML = `<p style="color:red">${response.error}</p>`;
+      } else {
+        // Show tracking info
+        if (response.multiple) {
+          resultContainer.innerHTML = response.orders.map(order => `
+            <div>
+              <p><strong>Order ID:</strong> ${order.order_id}</p>
+              <p><strong>Tracking Number:</strong> ${order.tracking_number}</p>
+              <p><strong>Status:</strong> ${order.status}</p>
+              <hr>
+            </div>
+          `).join('');
+        } else {
+          resultContainer.innerHTML = `
+            <p><strong>Order ID:</strong> ${response.order_id}</p>
+            <p><strong>Tracking Number:</strong> ${response.tracking_number}</p>
+            <p><strong>Status:</strong> ${response.status}</p>
+          `;
+
+          // Send notification after successful track
+          const customerId = localStorage.getItem('customer_id') || '';  // Adjust source as needed
+          if (customerId) {
+            sendNotification(customerId, 'track', `User tracked order ID ${response.order_id}`)
+              .then(res => {
+                if (!res.success) {
+                  console.error('Notification failed:', res);
+                } else {
+                  console.log('Notification sent');
+                }
+              })
+              .catch(err => console.error('Notification error:', err));
+          }
+        }
+      }
+    } catch (err) {
+      resultContainer.innerHTML = `<p style="color:red">Error: ${err.message}</p>`;
+    }
+  });
+});

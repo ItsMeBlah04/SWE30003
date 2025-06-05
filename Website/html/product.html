@@ -1,66 +1,103 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>AWE Electronics | Products</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="../css/product.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AWE Electronics | Products</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../css/product.css" />
 </head>
 <body>
-    <header>
-        <div><strong>AWE Electronics</strong></div>
+  <header>
+    <div><strong>AWE Electronics</strong></div>
     <nav>
-        <a href="web.html">Home</a>
-        <a href="#">About</a>
-        <a href="product.html">Products</a>
-        <a href="#">Contact</a>
-        <a href="checkout.html">Checkout</a>
-		<a href="track_order.html">Track Order</a>
-        <a href="login_signup.html" class="btn">Login</a>
+      <a href="web.html">Home</a>
+      <a href="#">About</a>
+      <a href="product.html">Products</a>
+      <a href="#">Contact</a>
+      <a href="checkout.html">Checkout</a>
+      <a href="track_order.html" id="track-link" style="display: none;">Track Order</a>
+      <a href="#" id="logoutBtn" class="btn" style="display: none;">Logout</a>
+      <a href="login_signup.html" class="btn" id="loginBtn">Login</a>
     </nav>
-    </header>
+  </header>
 
-    <section class="products-section">
-        <div id="product-list" class="product-grid"></div>
-    </section>
-    <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const productList = document.getElementById('product-list');
-        productList.innerHTML = '<div style="grid-column: 1/-1; text-align:center;">Loading products...</div>';
-        const formData = new FormData();
-        formData.append('action', 'get_all');
-        fetch('http://localhost:5000/admin_update_product', {
-            method: 'POST',
-            body: formData
-        })
+  <section class="products-section">
+    <div id="product-list" class="product-grid"></div>
+  </section>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const productList = document.getElementById('product-list');
+      productList.innerHTML = '<div style="grid-column: 1/-1; text-align:center;">Loading products...</div>';
+
+      const formData = new FormData();
+      formData.append('action', 'get_all');
+
+      fetch('http://localhost:5000/admin_update_product', {
+        method: 'POST',
+        body: formData
+      })
         .then(res => res.json())
         .then(data => {
-            productList.innerHTML = '';
-            if (data.success && data.products && data.products.length > 0) {
-                data.products.forEach(product => {
-                    const card = document.createElement('div');
-                    card.className = 'product-card';
-                    card.innerHTML = `
-                        <img src="${product.image}" alt="${product.name}" onerror="this.src='../images/placeholder.jpg'">
-                        <h3>${product.name}</h3>
-                        <div class="price">$${parseFloat(product.price).toFixed(2)}</div>
-                        <div class="product-actions">
-                          <a href="#">Learn More</a>
-                          <button class="add-to-cart-btn" data-product-id="${product.ProductID}">Add to Cart</button>
-                        </div>
-                    `;
-                    productList.appendChild(card);
-                });
-            } else {
-                productList.innerHTML = '<div style="grid-column: 1/-1; text-align:center;">No products found</div>';
-            }
+          productList.innerHTML = '';
+          if (data.success && data.products && data.products.length > 0) {
+            data.products.forEach(product => {
+              const card = document.createElement('div');
+              card.className = 'product-card';
+              card.innerHTML = `
+                <img src="${product.image}" alt="${product.name}" onerror="this.src='../images/placeholder.jpg'">
+                <h3>${product.name}</h3>
+                <div class="price">$${parseFloat(product.price).toFixed(2)}</div>
+                <div class="product-actions">
+                  <a href="#">Learn More</a>
+                  <button class="add-to-cart-btn" data-product-id="${product.ProductID}">Add to Cart</button>
+                </div>
+              `;
+              productList.appendChild(card);
+            });
+
+            // Attach event listeners to Add to Cart buttons
+            document.querySelectorAll('.add-to-cart-btn').forEach(button => {
+              button.addEventListener('click', function () {
+                const productId = this.getAttribute('data-product-id');
+                console.log(`Add to Cart clicked for product ID: ${productId}`);
+                // TODO: Add your add-to-cart logic here
+                alert(`Added product ID ${productId} to cart!`);
+              });
+            });
+
+          } else {
+            productList.innerHTML = '<div style="grid-column: 1/-1; text-align:center;">No products found</div>';
+          }
         })
         .catch(err => {
-            productList.innerHTML = '<div style="grid-column: 1/-1; text-align:center; color:red;">Failed to load products</div>';
+          console.error('Failed to load products', err);
+          productList.innerHTML = '<div style="grid-column: 1/-1; text-align:center; color:red;">Failed to load products</div>';
         });
+
+      // Navbar toggle logic
+      const customerId = localStorage.getItem('customer_id');
+      const trackLink = document.getElementById('track-link');
+      const logoutBtn = document.getElementById('logoutBtn');
+      const loginBtn = document.getElementById('loginBtn');
+
+      if (customerId) {
+        if (trackLink) trackLink.style.display = 'inline-block';
+        if (logoutBtn) logoutBtn.style.display = 'inline-block';
+        if (loginBtn) loginBtn.style.display = 'none';
+
+        logoutBtn?.addEventListener('click', e => {
+          e.preventDefault();
+          localStorage.removeItem('customer_id');
+          window.location.href = 'login_signup.html';
+        });
+      } else {
+        if (trackLink) trackLink.style.display = 'none';
+        if (logoutBtn) logoutBtn.style.display = 'none';
+        if (loginBtn) loginBtn.style.display = 'inline-block';
+      }
     });
-    </script>
-    <script src="../js/session.js"></script>
+  </script>
 </body>
 </html>
