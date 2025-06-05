@@ -73,28 +73,56 @@ class AuthService {
             // Send login request to API
             fetch(this.apiUrl, {
                 method: 'POST',
-                body: formData
+                body: formData,
+                // Add timeout to avoid hanging requests
+                signal: AbortSignal.timeout(10000) // 10 second timeout
             })
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.text();
+            })
+            .then(text => {
+                // Check if text is empty
+                if (!text || text.trim() === '') {
+                    throw new Error('Empty response from server');
+                }
+                
+                // Try to parse as JSON
+                try {
+                    return JSON.parse(text);
+                } catch (e) {
+                    // If parsing fails, show the raw response
+                    console.error('Failed to parse response as JSON:', text);
+                    throw new Error('Server returned invalid JSON. Check console for details.');
+                }
+            })
             .then(data => {
-                if (data.success) {
+                if (data && data.success) {
                     // Store customer data in session storage
                     sessionStorage.setItem('customer_id', data.customer_id);
-                    sessionStorage.setItem('customer_name', data.name);
+                    sessionStorage.setItem('customer_name', data.name || username);
                     sessionStorage.setItem('isCustomerAuthenticated', 'true');
                     
                     resolve({
                         success: true,
                         customer_id: data.customer_id,
-                        name: data.name,
-                        email: data.email
+                        name: data.name || username,
+                        email: data.email || ''
                     });
                 } else {
-                    reject(data.message || 'Login failed');
+                    reject(data?.message || 'Login failed');
                 }
             })
             .catch(error => {
-                reject('Network error: ' + error);
+                console.error('Customer login error:', error);
+                
+                if (error.name === 'AbortError') {
+                    reject('Request timed out. Server may be busy or unresponsive.');
+                } else {
+                    reject(error.message || 'Network error during login');
+                }
             });
         });
     }
@@ -118,11 +146,33 @@ class AuthService {
             // Send signup request to API
             fetch(this.apiUrl, {
                 method: 'POST',
-                body: formData
+                body: formData,
+                // Add timeout to avoid hanging requests
+                signal: AbortSignal.timeout(10000) // 10 second timeout
             })
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.text();
+            })
+            .then(text => {
+                // Check if text is empty
+                if (!text || text.trim() === '') {
+                    throw new Error('Empty response from server');
+                }
+                
+                // Try to parse as JSON
+                try {
+                    return JSON.parse(text);
+                } catch (e) {
+                    // If parsing fails, show the raw response
+                    console.error('Failed to parse response as JSON:', text);
+                    throw new Error('Server returned invalid JSON. Check console for details.');
+                }
+            })
             .then(data => {
-                if (data.success) {
+                if (data && data.success) {
                     // Store customer data in session storage
                     sessionStorage.setItem('customer_id', data.customer_id);
                     sessionStorage.setItem('customer_name', data.name);
@@ -134,11 +184,17 @@ class AuthService {
                         name: data.name
                     });
                 } else {
-                    reject(data.message || 'Signup failed');
+                    reject(data?.message || 'Signup failed');
                 }
             })
             .catch(error => {
-                reject('Network error: ' + error);
+                console.error('Registration error:', error);
+                
+                if (error.name === 'AbortError') {
+                    reject('Request timed out. Server may be busy or unresponsive.');
+                } else {
+                    reject(error.message || 'Network error during registration');
+                }
             });
         });
     }

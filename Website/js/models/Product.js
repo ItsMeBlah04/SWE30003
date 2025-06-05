@@ -11,7 +11,7 @@ class Product extends BaseModel {
         super(data);
         
         // Set default values if not provided
-        this.id = data.id || null;
+        this.id = data.product_id || data.id || null;
         this.name = data.name || '';
         this.description = data.description || '';
         this.price = data.price || 0;

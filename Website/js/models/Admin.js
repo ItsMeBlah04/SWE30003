@@ -38,48 +38,63 @@ class Admin extends BaseModel {
             // Send authentication request to API
             fetch('../php/auth.php', {
                 method: 'POST',
-                body: formData
+                body: formData,
+                // Add timeout to avoid hanging requests
+                signal: AbortSignal.timeout(10000) // 10 second timeout
             })
             .then(response => {
-                // DEBUG: Check if response is JSON
+                // Check if response is OK
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
-                return response.text().then(text => {
-                    try {
-                        // Try to parse as JSON
-                        return JSON.parse(text);
-                    } catch (e) {
-                        // If parsing fails, show the raw response
-                        console.error('Failed to parse response as JSON:', text);
-                        throw new Error('Server returned invalid JSON. Check console for details.');
-                    }
-                });
+                
+                // First get the text
+                return response.text();
+            })
+            .then(text => {
+                // Check if text is empty
+                if (!text || text.trim() === '') {
+                    throw new Error('Empty response from server');
+                }
+                
+                // Try to parse as JSON
+                try {
+                    return JSON.parse(text);
+                } catch (e) {
+                    console.error('Failed to parse response as JSON:', text);
+                    throw new Error('Server returned invalid JSON. Check console for details.');
+                }
             })
             .then(data => {
-                if (data.success) {
+                if (data && data.success) {
                     // Store admin data
                     this.admin_id = data.admin_id;
-                    this.name = data.name;
-                    this.email = data.email;
+                    this.name = data.name || username;
+                    this.email = data.email || '';
                     this._username = username;
                     this._isAuthenticated = true;
                     
                     // Store session data
                     sessionStorage.setItem('admin_id', data.admin_id);
-                    sessionStorage.setItem('admin_name', data.name);
-                    sessionStorage.setItem('admin_email', data.email);
+                    sessionStorage.setItem('admin_name', this.name);
+                    sessionStorage.setItem('admin_email', this.email);
                     sessionStorage.setItem('isAuthenticated', 'true');
                     
                     resolve({ success: true });
                 } else {
                     this._isAuthenticated = false;
-                    reject(data.message || 'Authentication failed');
+                    reject(data?.message || 'Authentication failed');
                 }
             })
             .catch(error => {
                 this._isAuthenticated = false;
-                reject('Network error: ' + error);
+                console.error('Authentication error:', error);
+                
+                if (error.name === 'AbortError') {
+                    reject('Request timed out. Server may be busy or unresponsive.');
+                } else {
+                    reject(error.message || 'Network error during authentication');
+                }
             });
         });
     }

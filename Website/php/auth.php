@@ -1,294 +1,403 @@
 <?php
-// Enable error reporting for debugging
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
-
-/**
- * Authentication API
- * 
- * Handles user authentication (login and signup)
- */
-
-// Include database configuration
-require_once 'config.php';
-
-// Set headers for API response
+// Set the content type header to JSON
 header('Content-Type: application/json');
 
-// Get request data
-$requestMethod = $_SERVER['REQUEST_METHOD'];
-$action = isset($_POST['action']) ? $_POST['action'] : '';
+require_once 'database_setup.php';
+require_once 'query.php';
 
-// If this is a POST request
-if ($requestMethod === 'POST') {
-    // Handle different actions
-    switch ($action) {
-        case 'login':
-            handleLogin();
-            break;
-        case 'signup':
-            handleSignup();
-            break;
-        case 'admin_login':
-            handleAdminLogin();
-            break;
-        default:
-            sendResponse(false, 'Invalid action');
+/**
+ * Authenticator Class
+ * Handles user authentication (both customers and admins)
+ */
+class Authenticator extends Query {
+    
+    /**
+     * Initialize with database connection
+     */
+    public function __construct($conn) {
+        parent::__construct($conn);
+    }
+    
+    /**
+     * Authenticate admin user
+     * 
+     * @param string $username Admin username
+     * @param string $password Admin password
+     * @return array|false Admin data if authenticated, false otherwise
+     */
+    public function authenticateAdmin($username, $password) {
+        try {
+            // Log attempt
+            error_log("Attempting to authenticate admin: $username");
+            
+            // First check if the username exists in Authenticator table with admin_id
+            $auth = $this->selectOne(
+                "SELECT * FROM Authenticator WHERE username = ? AND admin_id IS NOT NULL AND admin_id > 0 LIMIT 1", 
+                [$username]
+            );
+            
+            if (!$auth) {
+                error_log("Admin username not found or not linked to admin account: $username");
+                return false;
+            }
+            
+            // Log found user details (except password)
+            $logDetails = $auth;
+            unset($logDetails['password_harsh']);
+            error_log("Found authenticator record: " . json_encode($logDetails));
+            
+            // Determine if we have password_harsh or just password in the table
+            $passwordField = isset($auth['password_harsh']) ? 'password_harsh' : 'password';
+            $storedHash = $auth[$passwordField];
+            
+            if (empty($storedHash)) {
+                error_log("Empty password hash for admin: $username");
+                return false;
+            }
+            
+            // Try different authentication methods
+            $authenticated = false;
+            
+            // Method 1: Check if the stored value is a valid hash and verify the password
+            if (strlen($storedHash) >= 60 && strpos($storedHash, '$2y$') === 0) {
+                // This is likely a bcrypt hash
+                $authenticated = password_verify($password, $storedHash);
+                if ($authenticated) {
+                    error_log("Admin authenticated via bcrypt hash verification");
+                }
+            }
+            
+            // Method 2: Check if the stored value is an md5 hash
+            if (!$authenticated && strlen($storedHash) === 32 && ctype_xdigit($storedHash)) {
+                $authenticated = (md5($password) === $storedHash);
+                if ($authenticated) {
+                    error_log("Admin authenticated via md5 hash verification");
+                }
+            }
+            
+            // Method 3: Direct comparison (plain text password)
+            if (!$authenticated && $password === $storedHash) {
+                $authenticated = true;
+                error_log("Admin authenticated via direct password comparison");
+            }
+            
+            if ($authenticated) {
+                // Get admin details
+                $admin = $this->selectOne(
+                    "SELECT * FROM Admin WHERE admin_id = ? LIMIT 1",
+                    [$auth['admin_id']]
+                );
+                
+                if (!$admin) {
+                    error_log("Admin record not found for ID: " . $auth['admin_id']);
+                    return false;
+                }
+                
+                // Merge admin data with auth data
+                $result = array_merge($auth, $admin);
+                
+                // Remove sensitive data
+                unset($result['password_harsh'], $result['password']);
+                
+                return $result;
+            }
+            
+            error_log("Invalid password for admin: $username");
+            return false;
+        } catch (Exception $e) {
+            // Log error for debugging
+            error_log("Authentication error: " . $e->getMessage());
+            error_log("Exception trace: " . $e->getTraceAsString());
+            return false;
+        }
+    }
+    
+    /**
+     * Authenticate customer
+     * 
+     * @param string $username Customer username/email/phone
+     * @param string $password Customer password
+     * @return array|false Customer data if authenticated, false otherwise
+     */
+    public function authenticateCustomer($username, $password) {
+        try {
+            // Try to find customer by username in Authenticator table
+            $auth = $this->selectOne(
+                "SELECT a.authenticator_id, a.username, a.password_harsh, c.* 
+                 FROM Authenticator a 
+                 JOIN Customer c ON a.customer_id = c.customer_id 
+                 WHERE a.username = ? LIMIT 1", 
+                [$username]
+            );
+            
+            // If not found by username, try email/phone in Customer table
+            if (!$auth) {
+                $customer = $this->selectOne(
+                    "SELECT * FROM Customer WHERE (email = ? OR phone = ?) LIMIT 1", 
+                    [$username, $username]
+                );
+                
+                if (!$customer) {
+                    return false;
+                }
+                
+                // Get authenticator record for this customer
+                $auth = $this->selectOne(
+                    "SELECT * FROM Authenticator WHERE customer_id = ? LIMIT 1",
+                    [$customer['customer_id']]
+                );
+                
+                if (!$auth) {
+                    return false;
+                }
+            }
+            
+            // Verify password
+            if (password_verify($password, $auth['password_harsh'])) {
+                // Combine customer and auth data (excluding password)
+                $result = [
+                    'id' => $auth['customer_id'],
+                    'name' => $auth['name'] ?? ($auth['first_name'] . ' ' . $auth['last_name']),
+                    'email' => $auth['email'],
+                    'phone' => $auth['phone'] ?? ''
+                ];
+                
+                return $result;
+            }
+            
+            return false;
+        } catch (Exception $e) {
+            // Log error for debugging
+            error_log("Customer authentication error: " . $e->getMessage());
+            return false;
+        }
+    }
+    
+    /**
+     * Register a new customer
+     * 
+     * @param array $data Customer data
+     * @return array|false New customer data if registered, false otherwise
+     */
+    public function registerCustomer($data) {
+        try {
+            // Start transaction
+            $this->conn->begin_transaction();
+            
+            // Check if email already exists
+            $existingUser = $this->selectOne(
+                "SELECT customer_id FROM Customer WHERE email = ? LIMIT 1", 
+                [$data['email']]
+            );
+            
+            if ($existingUser) {
+                $this->conn->rollback();
+                return false; // Email already registered
+            }
+            
+            // Insert new customer
+            $success = $this->execute(
+                "INSERT INTO Customer (name, address, phone, email) 
+                 VALUES (?, ?, ?, ?)",
+                [
+                    $data['first_name'] . ' ' . $data['last_name'],
+                    $data['address'] ?? '',
+                    $data['phone'] ?? '',
+                    $data['email']
+                ]
+            );
+            
+            if (!$success) {
+                $this->conn->rollback();
+                return false;
+            }
+            
+            // Get the new customer ID
+            $customerId = $this->conn->insert_id;
+            
+            // Hash the password
+            $passwordHash = password_hash($data['password'], PASSWORD_DEFAULT);
+            
+            // Create default admin ID (for system access)
+            $adminId = 1; // Default admin ID
+            
+            // Create authenticator record
+            $authSuccess = $this->execute(
+                "INSERT INTO Authenticator (customer_id, admin_id, username, password_harsh) 
+                 VALUES (?, ?, ?, ?)",
+                [
+                    $customerId,
+                    $adminId,
+                    $data['email'], // Use email as username
+                    $passwordHash
+                ]
+            );
+            
+            if (!$authSuccess) {
+                $this->conn->rollback();
+                return false;
+            }
+            
+            // Commit transaction
+            $this->conn->commit();
+            
+            // Return the new customer data
+            return [
+                'customer_id' => $customerId,
+                'name' => $data['first_name'] . ' ' . $data['last_name'],
+                'email' => $data['email'],
+                'phone' => $data['phone'] ?? ''
+            ];
+        } catch (Exception $e) {
+            // Rollback on error
+            $this->conn->rollback();
+            error_log("Registration error: " . $e->getMessage());
+            return false;
+        }
+    }
+}
+
+// Handle API requests
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    try {
+        // Initialize database connection
+        $configs = require_once 'settings.php';
+        $database = new Database($configs);
+        $conn = $database->getConnection();
+        
+        // Initialize authenticator
+        $authenticator = new Authenticator($conn);
+        
+        // Get action from POST data
+        $action = $_POST['action'] ?? '';
+        
+        // Handle different actions
+        switch ($action) {
+            case 'admin_login':
+                // Get username and password from POST data
+                $username = $_POST['username'] ?? '';
+                $password = $_POST['password'] ?? '';
+                
+                // Log authentication attempt
+                error_log("Admin login attempt for: $username");
+                
+                // Set content type header
+                header('Content-Type: application/json');
+                
+                // Authenticate admin
+                $admin = $authenticator->authenticateAdmin($username, $password);
+                
+                if ($admin) {
+                    // Authentication successful
+                    error_log("Admin authentication successful for: $username");
+                    
+                    // Log admin data for debugging
+                    error_log("Admin data: " . json_encode($admin));
+                    
+                    echo json_encode([
+                        'success' => true,
+                        'admin_id' => $admin['admin_id'],
+                        'name' => $admin['name'] ?? $admin['username'],
+                        'email' => $admin['email'] ?? 'admin@electrik.com',
+                        'username' => $admin['username']
+                    ]);
+                } else {
+                    // Authentication failed
+                    error_log("Admin authentication failed for: $username");
+                    
+                    echo json_encode([
+                        'success' => false,
+                        'message' => 'Invalid username or password'
+                    ]);
+                }
+                break;
+            
+            case 'login':
+                // Get username and password from POST data
+                $username = $_POST['username'] ?? '';
+                $password = $_POST['password'] ?? '';
+                
+                // Authenticate customer
+                $customer = $authenticator->authenticateCustomer($username, $password);
+                
+                if ($customer) {
+                    // Authentication successful
+                    echo json_encode([
+                        'success' => true,
+                        'customer_id' => $customer['id'] ?? $customer['customer_id'],
+                        'name' => $customer['name'] ?? ($customer['first_name'] . ' ' . $customer['last_name']),
+                        'email' => $customer['email'] ?? ''
+                    ]);
+                } else {
+                    // Authentication failed
+                    echo json_encode([
+                        'success' => false,
+                        'message' => 'Invalid username or password'
+                    ]);
+                }
+                break;
+            
+            case 'signup':
+                // Get customer data from POST
+                $customerData = [
+                    'first_name' => $_POST['first_name'] ?? '',
+                    'last_name' => $_POST['last_name'] ?? '',
+                    'email' => $_POST['email'] ?? '',
+                    'phone' => $_POST['phone'] ?? '',
+                    'password' => $_POST['password'] ?? ''
+                ];
+                
+                // Validate required fields
+                if (empty($customerData['first_name']) || empty($customerData['email']) || empty($customerData['password'])) {
+                    echo json_encode([
+                        'success' => false,
+                        'message' => 'Missing required fields'
+                    ]);
+                    break;
+                }
+                
+                // Register customer
+                $newCustomer = $authenticator->registerCustomer($customerData);
+                
+                if ($newCustomer) {
+                    // Registration successful
+                    echo json_encode([
+                        'success' => true,
+                        'customer_id' => $newCustomer['customer_id'],
+                        'name' => $newCustomer['name']
+                    ]);
+                } else {
+                    // Registration failed
+                    echo json_encode([
+                        'success' => false,
+                        'message' => 'Registration failed. Email may already be registered.'
+                    ]);
+                }
+                break;
+            
+            default:
+                // Invalid action
+                echo json_encode([
+                    'success' => false,
+                    'message' => 'Invalid action'
+                ]);
+                break;
+        }
+        
+        // Close database connection
+        $conn->close();
+    } catch (Exception $e) {
+        // Send error response as JSON
+        echo json_encode([
+            'success' => false,
+            'message' => 'Server error: ' . $e->getMessage()
+        ]);
     }
 } else {
-    // Only POST requests are allowed
-    sendResponse(false, 'Invalid request method');
-}
-
-/**
- * Handle customer login
- */
-function handleLogin() {
-    // Get username and password from request
-    $username = isset($_POST['username']) ? $_POST['username'] : '';
-    $password = isset($_POST['password']) ? $_POST['password'] : '';
-    
-    // Validate input
-    if (empty($username) || empty($password)) {
-        sendResponse(false, 'Username and password are required');
-        return;
-    }
-    
-    // Find customer by joining authenticator and customer tables
-    $query = "SELECT c.customer_id, c.name, c.email, auth.password_harsh 
-              FROM customer c 
-              JOIN authenticator auth ON c.customer_id = auth.customer_id 
-              WHERE auth.username = ?";
-    $params = [$username];
-    
-    $result = executeQuery($query, $params);
-    
-    if (!$result['success']) {
-        sendResponse(false, 'Database error: ' . $result['message']);
-        return;
-    }
-    
-    // Check if customer exists
-    if (count($result['data']) === 0) {
-        sendResponse(false, 'Invalid username or password');
-        return;
-    }
-    
-    $customer = $result['data'][0];
-    
-    // Verify password using PHP's password_verify for bcrypt hashes
-    if (!password_verify($password, $customer['password_harsh'])) {
-        sendResponse(false, 'Invalid username or password');
-        return;
-    }
-    
-    // Return success response with customer data
-    sendResponse(true, 'Login successful', [
-        'customer_id' => $customer['customer_id'],
-        'name' => $customer['name'],
-        'email' => $customer['email']
+    // Invalid request method
+    echo json_encode([
+        'success' => false,
+        'message' => 'Only POST requests are allowed'
     ]);
-}
-
-/**
- * Handle customer signup
- */
-function handleSignup() {
-    // Get customer data from request
-    $firstName = isset($_POST['first_name']) ? $_POST['first_name'] : '';
-    $lastName = isset($_POST['last_name']) ? $_POST['last_name'] : '';
-    $email = isset($_POST['email']) ? $_POST['email'] : '';
-    $phone = isset($_POST['phone']) ? $_POST['phone'] : '';
-    $password = isset($_POST['password']) ? $_POST['password'] : '';
-    
-    // Validate input
-    if (empty($firstName) || empty($lastName) || empty($email) || empty($phone) || empty($password)) {
-        sendResponse(false, 'All fields are required');
-        return;
-    }
-    
-    // Check if email already exists in customer table
-    $query = "SELECT customer_id FROM Customer WHERE email = ?";
-    $params = [$email];
-    
-    $result = executeQuery($query, $params);
-    
-    if (!$result['success']) {
-        sendResponse(false, 'Database error: ' . $result['message']);
-        return;
-    }
-    
-    if (count($result['data']) > 0) {
-        sendResponse(false, 'Email already exists');
-        return;
-    }
-    
-    // Check if username already exists in authenticator table
-    $username = strtolower($firstName . substr($lastName, 0, 1)) . rand(1, 999); // Generate a username
-    $query = "SELECT authenticator_id FROM authenticator WHERE username = ?";
-    $params = [$username];
-    
-    $result = executeQuery($query, $params);
-    
-    if (!$result['success']) {
-        sendResponse(false, 'Database error: ' . $result['message']);
-        return;
-    }
-    
-    if (count($result['data']) > 0) {
-        // Username exists, try another one
-        $username = strtolower($firstName . substr($lastName, 0, 2)) . rand(1000, 9999);
-    }
-    
-    // Start a transaction
-    $conn = getDbConnection();
-    mysqli_begin_transaction($conn);
-    
-    try {
-        // Create new customer
-        $name = $firstName . ' ' . $lastName;
-        $query = "INSERT INTO Customer (name, email, phone) VALUES (?, ?, ?)";
-        $params = [$name, $email, $phone];
-        
-        $stmt = mysqli_prepare($conn, $query);
-        
-        if (!$stmt) {
-            throw new Exception('Failed to prepare customer insert statement: ' . mysqli_error($conn));
-        }
-        
-        mysqli_stmt_bind_param($stmt, 'sss', $name, $email, $phone);
-        
-        if (!mysqli_stmt_execute($stmt)) {
-            throw new Exception('Failed to execute customer insert: ' . mysqli_stmt_error($stmt));
-        }
-        
-        $customerId = mysqli_insert_id($conn);
-        mysqli_stmt_close($stmt);
-        
-        // Create authenticator entry
-        $passwordHash = password_hash($password, PASSWORD_BCRYPT);
-        $query = "INSERT INTO authenticator (customer_id, admin_id, username, password_harsh) VALUES (?, 0, ?, ?)";
-        
-        $stmt = mysqli_prepare($conn, $query);
-        
-        if (!$stmt) {
-            throw new Exception('Failed to prepare authenticator insert statement: ' . mysqli_error($conn));
-        }
-        
-        mysqli_stmt_bind_param($stmt, 'iss', $customerId, $username, $passwordHash);
-        
-        if (!mysqli_stmt_execute($stmt)) {
-            throw new Exception('Failed to execute authenticator insert: ' . mysqli_stmt_error($stmt));
-        }
-        
-        mysqli_stmt_close($stmt);
-        
-        // Commit transaction
-        mysqli_commit($conn);
-        
-        // Return success response with customer data
-        sendResponse(true, 'Signup successful', [
-            'customer_id' => $customerId,
-            'name' => $name,
-            'email' => $email,
-            'username' => $username // Return generated username
-        ]);
-    } catch (Exception $e) {
-        // Rollback transaction on error
-        mysqli_rollback($conn);
-        sendResponse(false, 'Error creating account: ' . $e->getMessage());
-    } finally {
-        closeDbConnection($conn);
-    }
-}
-
-/**
- * Handle admin login
- */
-function handleAdminLogin() {
-    // Get username and password from request
-    $username = isset($_POST['username']) ? $_POST['username'] : '';
-    $password = isset($_POST['password']) ? $_POST['password'] : '';
-    
-    // Validate input
-    if (empty($username) || empty($password)) {
-        sendResponse(false, 'Username and password are required');
-        return;
-    }
-    
-    // Debug: Log input
-    error_log("Admin login attempt with username: $username");
-    
-    // Find admin authenticator and join with admin table
-    $query = "SELECT a.admin_id, a.name, a.email, auth.password_harsh
-              FROM authenticator auth
-              JOIN admin a ON a.admin_id = auth.admin_id
-              WHERE auth.username = ? AND auth.admin_id > 0";
-    $params = [$username];
-    
-    $result = executeQuery($query, $params);
-    
-    if (!$result['success']) {
-        sendResponse(false, 'Database error: ' . $result['message']);
-        return;
-    }
-    
-    // Check if admin exists
-    if (count($result['data']) === 0) {
-        sendResponse(false, 'Invalid username or password');
-        return;
-    }
-    
-    $admin = $result['data'][0];
-    
-    // Verify password
-    // First try direct comparison (for unhashed passwords in the database)
-    if ($password === $admin['password_harsh']) {
-        // Return success response with admin data
-        sendResponse(true, 'Login successful', [
-            'admin_id' => $admin['admin_id'],
-            'name' => $admin['name'],
-            'email' => $admin['email']
-        ]);
-        return;
-    }
-    
-    // Then try with password_verify (for hashed passwords)
-    if (password_verify($password, $admin['password_harsh'])) {
-        // Return success response with admin data
-        sendResponse(true, 'Login successful', [
-            'admin_id' => $admin['admin_id'],
-            'name' => $admin['name'],
-            'email' => $admin['email']
-        ]);
-        return;
-    }
-    
-    // Password doesn't match
-    sendResponse(false, 'Invalid username or password');
-}
-
-/**
- * Send JSON response
- * 
- * @param bool $success Success status
- * @param string $message Message
- * @param array $data Response data
- */
-function sendResponse($success, $message, $data = []) {
-    $response = [
-        'success' => $success,
-        'message' => $message
-    ];
-    
-    // Add data to response if available
-    if (!empty($data)) {
-        $response = array_merge($response, $data);
-    }
-    
-    // Send JSON response
-    echo json_encode($response);
-    exit;
 }
 ?> 

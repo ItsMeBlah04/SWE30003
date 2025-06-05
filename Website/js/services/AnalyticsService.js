@@ -3,6 +3,9 @@
  * Service class to handle analytics-related operations
  */
 class AnalyticsService {
+    /**
+     * Initialize the AnalyticsService
+     */
     constructor() {
         this.apiUrl = '../php/analytics.php';
     }
@@ -12,6 +15,7 @@ class AnalyticsService {
      * @param {string} action - The action to perform
      * @param {Object} data - Additional data to send
      * @returns {Promise} Promise that resolves with the response
+     * @private
      */
     makeRequest(action, data = {}) {
         return new Promise((resolve, reject) => {
@@ -75,7 +79,7 @@ class AnalyticsService {
     }
 
     /**
-     * Get sales summary
+     * Get sales summary for specified date range
      * @param {string} startDate - Start date (YYYY-MM-DD)
      * @param {string} endDate - End date (YYYY-MM-DD)
      * @returns {Promise} Promise that resolves with sales summary
@@ -88,20 +92,27 @@ class AnalyticsService {
     }
 
     /**
-     * Get product sales
+     * Get product sales for specified date range
      * @param {string} startDate - Start date (YYYY-MM-DD)
      * @param {string} endDate - End date (YYYY-MM-DD)
+     * @param {string} category - Optional category filter
      * @returns {Promise} Promise that resolves with product sales
      */
-    getProductSales(startDate, endDate) {
-        return this.makeRequest('product_sales', {
+    getProductSales(startDate, endDate, category = null) {
+        const data = {
             start_date: startDate,
             end_date: endDate
-        });
+        };
+        
+        if (category && category !== 'all') {
+            data.category = category;
+        }
+        
+        return this.makeRequest('product_sales', data);
     }
 
     /**
-     * Get category sales
+     * Get category sales for specified date range
      * @param {string} startDate - Start date (YYYY-MM-DD)
      * @param {string} endDate - End date (YYYY-MM-DD)
      * @returns {Promise} Promise that resolves with category sales
@@ -114,7 +125,7 @@ class AnalyticsService {
     }
 
     /**
-     * Get sales by date
+     * Get sales by date for specified date range
      * @param {string} startDate - Start date (YYYY-MM-DD)
      * @param {string} endDate - End date (YYYY-MM-DD)
      * @returns {Promise} Promise that resolves with sales by date
@@ -127,7 +138,32 @@ class AnalyticsService {
     }
 
     /**
-     * Generate a sales report
+     * Process daily sales data into monthly totals
+     * Follows the exact logic shown in the specification
+     * @param {Array} salesByDate - Array of daily sales data
+     * @returns {Array} Array of monthly totals
+     */
+    processMonthlyData(salesByDate = []) {
+        // Create array with 12 months (default to 0)
+        const monthlySales = new Array(12).fill(0);
+        
+        // If we have sales by date, populate the monthly data
+        if (salesByDate && salesByDate.length > 0) {
+            salesByDate.forEach(sale => {
+                // Parse the date
+                const date = new Date(sale.sale_date);
+                // Get the month (0-11)
+                const month = date.getMonth();
+                // Add the sales to the monthly total
+                monthlySales[month] += parseFloat(sale.total_sales);
+            });
+        }
+        
+        return monthlySales;
+    }
+
+    /**
+     * Generate a complete sales report
      * @param {Object} filters - Report filters (month, year, category)
      * @returns {Promise} Promise that resolves with sales report
      */
@@ -192,7 +228,7 @@ class AnalyticsService {
         if (filters.month && filters.month !== 'all') {
             // Use the year from filters or default to current year
             const month = parseInt(filters.month) - 1; // JavaScript months are 0-11
-            const year = filters.year ? parseInt(filters.year) : new Date().getFullYear();
+            const year = filters.year ? parseInt(filters.year) : 2024; // Default to 2024
             
             // Start date is first day of month
             startDate = new Date(year, month, 1);
@@ -206,24 +242,30 @@ class AnalyticsService {
                 startDate = new Date(year, 0, 1);
                 endDate = new Date(year, 11, 31);
             } else {
-                // Default to current year if no specific filters
-                const currentYear = new Date().getFullYear();
-                startDate = new Date(currentYear, 0, 1);  // Jan 1, current year
-                endDate = new Date(currentYear, 11, 31);  // Dec 31, current year
+                // Default to 2024 if no specific filters
+                const year = 2024;
+                startDate = new Date(year, 0, 1);  // Jan 1, 2024
+                endDate = new Date(year, 11, 31);  // Dec 31, 2024
             }
         }
         
         // Format dates for API
-        const formatDate = (date) => {
-            const year = date.getFullYear();
-            const month = String(date.getMonth() + 1).padStart(2, '0');
-            const day = String(date.getDate()).padStart(2, '0');
-            return `${year}-${month}-${day}`;
-        };
-        
         return {
-            startDate: formatDate(startDate),
-            endDate: formatDate(endDate)
+            startDate: this.formatDate(startDate),
+            endDate: this.formatDate(endDate)
         };
+    }
+    
+    /**
+     * Format date as YYYY-MM-DD
+     * @param {Date} date - Date to format
+     * @returns {string} Formatted date
+     * @private
+     */
+    formatDate(date) {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
     }
 } 
