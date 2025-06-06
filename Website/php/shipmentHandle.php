@@ -53,7 +53,6 @@
 
             try {
                 $shipment = $this->shipment->getShipmentByCustomerId($customerId);
-                error_log("Shipment data retrieved for customer ID $customerId: " . json_encode($shipment));
                 return ['success' => true, 'data' => $shipment];
             } catch (Exception $e) {
                 return ['success' => false, 'message' => $e->getMessage()];
