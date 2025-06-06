@@ -12,19 +12,17 @@
     <div><strong>AWE Electronics</strong></div>
     <nav>
       <a href="web.html">Home</a>
-      <a href="#">About</a>
+      <a href="about.html">About</a>
       <a href="product.html">Products</a>
-      <a href="#">Contact</a>
       <a href="checkout.html">Checkout</a>
       <a href="track_order.html">Track Order</a>
-      <a href="login_signup.html" class="btn">Login</a>
+      <a href="login_signup.html" class="btn" id="login-logout-btn">Login</a>
     </nav>
   </header>
 
   <div class="container">
     <h2>Checkout</h2>
 
-    <!-- Cart items will be rendered here -->
     <div id="cart-items-list">
       <p>Loading cart...</p>
     </div>
@@ -35,33 +33,70 @@
       <p><strong>Total: <span id="total-amount">$0.00</span></strong></p>
     </div>
 
-    <!-- All in one form: customer + payment info -->
-  <form class="payment-method"> 
-    <h3>Payment Method</h3>
-    <div class="form-group">
-      <label for="card-number">Card Number:</label>
-      <input type="text" id="card-number" name="card-number" maxlength="19" placeholder="1234 5678 9012 3456" required>
-    </div>
-    <div class="form-group">
-      <label for="card-cvc">CVC:</label>
-      <input type="text" id="card-cvc" name="card-cvc" maxlength="4" placeholder="123" required>
-    </div>
-    <div class="form-group">
-      <label for="card-expiry">Expiry Date:</label>
-      <input type="text" id="card-expiry" name="card-expiry" maxlength="7" placeholder="MM/YY" required>
-    </div>
-    <div class="form-group">
-      <label for="card-name">Name on Card:</label>
-      <input type="text" id="card-name" name="card-name" required>
-    </div>
+    <form class="payment-method" id="checkout-form">
+      <h3>Choose Payment Method</h3>
+      <div class="form-group">
+        <button type="button" id="select-card">💳 Pay with Card</button>
+        <button type="button" id="select-paypal">🅿️ Pay with PayPal</button>
+      </div>
 
-    <button type="submit">Proceed to Payment</button>
-  </form> 
+      <!-- Card Payment -->
+      <div id="card-section" style="display: none;">
+        <h4>Card</h4>
+        <div class="form-group">
+          <label for="card-number">Card Number:</label>
+          <input type="text" id="card-number" maxlength="19" placeholder="1234 5678 9012 3456">
+        </div>
+        <div class="form-group">
+          <label for="card-cvc">CVC:</label>
+          <input type="text" id="card-cvc" maxlength="4" placeholder="123">
+        </div>
+        <div class="form-group">
+          <label for="card-expiry">Expiry Date:</label>
+          <input type="text" id="card-expiry" maxlength="7" placeholder="MM/YY">
+        </div>
+        <div class="form-group">
+          <label for="card-name">Name on Card:</label>
+          <input type="text" id="card-name">
+        </div>
+        <button type="submit" id="pay-card">Proceed with Card</button>
+      </div>
 
+      <!-- PayPal Payment -->
+      <div id="paypal-section" style="display: none;">
+        <h4>PayPal</h4>
+        <div class="form-group">
+          <label for="paypal-email">PayPal Email:</label>
+          <input type="text" id="paypal-email" placeholder="email@example.com">
+        </div>
+        <div class="form-group">
+          <label for="paypal-name">Account Holder Name:</label>
+          <input type="text" id="paypal-name" placeholder="John Doe">
+        </div>
+        <div class="form-group">
+          <label for="paypal-country">Billing Country:</label>
+          <select id="paypal-country">
+            <option value="AU">Australia</option>
+            <option value="US">United States</option>
+            <option value="UK">United Kingdom</option>
+          </select>
+        </div>
+        <button type="submit" id="pay-paypal">Pay with PayPal</button>
+        <p id="paypal-result" style="margin-top: 10px;"></p>
+      </div>
+    </form>
   </div>
+  <div id="toast" class="toast"></div>
 
   <script src="../js/session.js"></script>
-  <script type="module" src="../js/customer_cart_checkout.js"></script>
   <script src="../js/services/CustomerInformationService.js"></script>
+  <script src="../js/services/OrderService.js"></script>
+  <script src="../js/services/InvoiceService.js"></script>
+  <script src="../js/services/ShipmentService.js"></script>
+  <script src="../js/services/PaymentService.js"></script>
+  <script src="../js/services/CardPaymentService.js"></script>
+  <script src="../js/services/eBankingService.js"></script>
+  <script src="../js/customer_name_display.js"></script>
+  <script type="module" src="../js/customer_cart_checkout.js"></script>
 </body>
 </html>

@@ -33,7 +33,7 @@ class PaymentHandle {
         $action = $post['action'] ?? '';
 
         switch ($action) {
-            case 'create':
+            case 'update_payment':
                 return $this->create($post);
             default:
                 return ['success' => false, 'message' => 'Invalid action'];

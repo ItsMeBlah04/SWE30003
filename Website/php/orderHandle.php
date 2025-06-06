@@ -33,7 +33,7 @@ class OrderHandle {
         $action = $post['action'] ?? '';
 
         switch ($action) {
-            case 'create':
+            case 'place_order':
                 return $this->create($post);
             default:
                 return ['success' => false, 'message' => 'Invalid action'];

@@ -60,3 +60,112 @@ h2 {
   margin-top: 20px;
   font-size: 1.2rem;
 } 
+
+#login-logout-btn {
+  display: inline-block;
+  padding: 10px 16px;
+  background-color: black;
+  color: white;
+  border-radius: 6px;
+  text-decoration: none;
+  font-weight: 600;
+  transition: background-color 0.3s, transform 0.2s;
+}
+
+#login-logout-btn:hover {
+  background-color: green;
+  transform: scale(1.05);
+  color: white;
+}
+
+.toast {
+  position: fixed;
+  top: 70px; /* Adjust based on your navbar height */
+  left: 50%;
+  transform: translateX(-50%);
+  min-width: 300px;
+  max-width: 600px;
+  background-color: #28a745;
+  color: #fff;
+  padding: 18px 24px;
+  border-radius: 10px;
+  text-align: center;
+  font-size: 18px;
+  font-weight: 600;
+  z-index: 9999;
+  box-shadow: 0 6px 12px rgba(0,0,0,0.2);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.5s ease, visibility 0.5s ease;
+}
+
+.toast.show {
+  opacity: 1;
+  visibility: visible;
+}
+
+button {
+  display: inline-block;
+  background-color: #1976d2;
+  color: white;
+  border: none;
+  padding: 10px 18px;
+  font-size: 15px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+button:hover {
+  background-color: #125ea9;
+  transform: translateY(-2px);
+}
+
+.form-group button {
+  margin-right: 10px;
+  margin-top: 10px;
+}
+
+#pay-card,
+#pay-paypal {
+  margin-top: 20px;
+  width: 100%;
+}
+
+.remove-btn {
+  background-color: #e53935; /* red */
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  font-size: 14px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.remove-btn:hover {
+  background-color: #c62828;
+  transform: scale(1.05);
+}
+
+input[type="text"],
+select {
+  width: 100%;
+  padding: 10px 12px;
+  font-size: 15px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  margin-top: 5px;
+  margin-bottom: 15px;
+  background-color: #fff;
+  font-family: 'Inter', sans-serif;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+input[type="text"]:focus,
+select:focus {
+  border-color: #28a745; 
+  box-shadow: 0 0 0 2px rgba(40, 167, 69, 0.2);
+  outline: none;
+}

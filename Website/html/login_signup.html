@@ -37,9 +37,10 @@
 
     <!-- User Login Form -->
     <form id="login-form">
-      <input type="text" placeholder="Email" required />
+      <input type="text" placeholder="Email or Phone Number" required />
       <input type="password" placeholder="Password" required />
       <button type="submit">Login</button>
+      <button type="button" id="logout-btn" style="display: none; margin-top: 10px;" class="btn">Logout</button>
     </form>
 
     <!-- Admin Login Form -->
@@ -56,11 +57,12 @@
       <input type="text" placeholder="Last Name" required />
       <input type="email" placeholder="Email" required />
       <input type="tel" placeholder="Phone Number" required />
-      <input type="text" placeholder="Address" required /> 
       <input type="password" placeholder="Password" required />
       <button type="submit">Sign Up</button>
     </form>
 
+    <div class="toggle-link" onclick="toggleForms()">Don't have an admin account? Sign Up</div>
+    
     <!-- Admin Sign Up Form -->
     <form id="admin-signup-form" style="display: none;">
       <input type="text" placeholder="Full Name" required />
@@ -70,15 +72,16 @@
       <button type="submit">Admin Sign Up</button>
     </form>
 
-    <div class="toggle-link">
-      <a href="signup.html">Don't have an account? Sign Up</a>
+
+    <div class="toggle-link-customer-signup">
+      <a href="signup.html">Don't have a customer account? Sign Up</a>
     </div>
-        
     <div id="message-container"></div>
   </div>
 
   <!-- Include page-specific scripts -->
   <script src="../js/auth.js"></script>
   <script src="../js/session.js"></script>
+  <script src="../js/customer_name_display.js"></script>
 </body>
 </html>

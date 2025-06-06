@@ -1,6 +1,7 @@
 <?php
-require_once 'config.php';
+require_once 'settings.php';
 require_once 'database_setup.php';
+require_once 'query.php';
 
 class Payment extends Query {
 
@@ -9,10 +10,10 @@ class Payment extends Query {
     }
 
     public function create($data) {
-        $orderId = $data['order_id'] ?? null;
-        $method  = $data['method'] ?? 'e-banking';
-        $amount  = $data['amount'] ?? null;
-        $status  = $data['status'] ?? 'successfully';
+        $orderId = $data['order_id'];
+        $method  = $data['payment_method'];
+        $amount  = $data['amount'];
+        $status  = 'successfully';
 
         // Validate inputs
         if (!$orderId || !$amount || !$method || !$status) {

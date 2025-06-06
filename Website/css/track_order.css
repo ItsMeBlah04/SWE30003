@@ -83,6 +83,24 @@ input[type="text"] {
   margin-bottom: 20px;
 }
 
+#login-logout-btn {
+  display: inline-block;
+  padding: 10px 16px;
+  background-color: black;
+  color: white;
+  border-radius: 6px;
+  text-decoration: none;
+  font-weight: 600;
+  transition: background-color 0.3s, transform 0.2s;
+}
+
+#login-logout-btn:hover {
+  background-color: green;
+  transform: scale(1.05);
+  color: white;
+}
+
+
 button {
   width: 100%;
   padding: 12px;
@@ -108,3 +126,45 @@ button:hover {
   font-size: 16px;
   color: #333;
 }
+
+.order-card-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.5rem;
+  padding: 2rem;
+  justify-items: center;
+}
+
+.order-card {
+  background-color: #fff;
+  border-radius: 12px;
+  padding: 1.5rem 2rem;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 320px;
+  text-align: center;
+  border-left: 5px solid #1976d2;
+  transition: transform 0.2s ease;
+}
+
+.order-card:hover {
+  transform: translateY(-4px);
+}
+
+.order-card h3 {
+  font-size: 1.1rem;
+  color: #222;
+  margin-bottom: 1rem;
+}
+
+.order-detail {
+  font-size: 0.95rem;
+  color: #555;
+  margin: 0.4rem 0;
+}
+
+.order-detail span {
+  font-weight: 600;
+  color: #000;
+}
+

@@ -1,5 +1,5 @@
 // signup.js
-console.log("✅ signup.js is loaded");
+console.log("signup.js is loaded");
 
 // Initialize service
 const authService = new AuthService();

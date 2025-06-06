@@ -3,4 +3,5 @@ class CheckOutService {
         this.apiUrl = '../php/checkout.php';
         this._currentOrder = null;
     }
+
 }

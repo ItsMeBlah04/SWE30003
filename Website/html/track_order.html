@@ -3,15 +3,15 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Track Your Order</title>
-   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="../css/track_order.css" />
-  <script src="../js/track_order.js" defer></script>
+  <title>AWE Electronics | My Orders</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../css/user.css" />
 </head>
 <body>
-
   <header>
-    <div><strong>AWE Electronics</strong></div>
+    <div>
+      <a href="web.html"><strong>AWE Electronics</strong></a>
+    </div>
     <nav>
       <a href="web.html">Home</a>
       <a href="about.html">About</a>
@@ -22,18 +22,40 @@
     </nav>
   </header>
 
-  <section class="track-section">
-    <div class="track-container">
-      <h1>Track Your Order</h1>
-      <p class="track-subtext">Enter your Order ID below to check the latest status.</p>
-
-      <input type="text" id="orderId" placeholder="e.g. ORD101" />
-      <button onclick="trackOrder()">Track</button>
-
-      <div id="result" class="result-box"></div>
+  <section>
+    <div class="text-block">
+      <h1>Your Orders</h1>
+      <div id="order-list"></div>
     </div>
   </section>
 
+  <div class="footer">
+    <div>
+      <p><strong>Resources</strong></p>
+      <a href="#">FAQs</a>
+      <a href="#">Support</a>
+      <a href="#">Terms</a>
+      <a href="#">Privacy</a>
+    </div>
+    <div>
+      <p><strong>Company</strong></p>
+      <a href="#">About Us</a>
+      <a href="#">Careers</a>
+      <a href="#">Press</a>
+      <a href="#">Partnerships</a>
+    </div>
+    <div>
+      <p><strong>Connect</strong></p>
+      <a href="#">Facebook</a>
+      <a href="#">Twitter</a>
+      <a href="#">Instagram</a>
+      <a href="#">LinkedIn</a>
+    </div>
+  </div>
+
   <script src="../js/session.js"></script>
+  <script src="../js/customer_name_display.js"></script>
+  <script src="../js/services/ShipmentService.js"></script>
+  <script src="../js/trackingOrder.js"></script>
 </body>
 </html>

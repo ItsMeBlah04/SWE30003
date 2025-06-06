@@ -20,12 +20,12 @@ CREATE TABLE Product (
   manufacter VARCHAR(100)
 );
 
-CREATE TABLE Orders_Item (
-  order_item_id INT PRIMARY KEY AUTO_INCREMENT,
-  order_id INT NOT NULL,
-  product_id INT NOT NULL REFERENCES Product(product_id),
-  quantity INT NOT NULL
-);
+-- CREATE TABLE Orders_Item (
+--   order_item_id INT PRIMARY KEY AUTO_INCREMENT,
+--   order_id INT NOT NULL,
+--   product_id INT NOT NULL REFERENCES Product(product_id),
+--   quantity INT NOT NULL
+-- );
 
 CREATE TABLE Invoice (
   invoice_id INT PRIMARY KEY AUTO_INCREMENT,
@@ -57,11 +57,11 @@ CREATE TABLE Sales_Report (
   data_summary LONGBLOB
 );
 
-CREATE TABLE Cart (
-  cart_id INT PRIMARY KEY AUTO_INCREMENT,
-  customer_id INT NOT NULL,
-  total_amount DECIMAL(10,2)
-);
+-- CREATE TABLE Cart (
+--   cart_id INT PRIMARY KEY AUTO_INCREMENT,
+--   customer_id INT NOT NULL,
+--   total_amount DECIMAL(10,2)
+-- );
 
 CREATE TABLE Customer (
   customer_id INT PRIMARY KEY AUTO_INCREMENT,
@@ -87,20 +87,20 @@ CREATE TABLE Admin (
   password_harsh VARCHAR(255)
 );
 
-CREATE TABLE Notification (
-  notification_id INT PRIMARY KEY AUTO_INCREMENT,
-  customer_id INT NOT NULL REFERENCES Customer(customer_id),
-  type VARCHAR(50),
-  content TEXT,
-  timestamp DATETIME NOT NULL
-);
+-- CREATE TABLE Notification (
+--   notification_id INT PRIMARY KEY AUTO_INCREMENT,
+--   customer_id INT NOT NULL REFERENCES Customer(customer_id),
+--   type VARCHAR(50),
+--   content TEXT,
+--   timestamp DATETIME NOT NULL
+-- );
 
-CREATE TABLE Cart_Item (
-  cart_item_id INT PRIMARY KEY AUTO_INCREMENT,
-  cart_id INT NOT NULL REFERENCES Cart(cart_id),
-  product_id INT NOT NULL REFERENCES Product(product_id),
-  quantity INT NOT NULL
-);
+-- CREATE TABLE Cart_Item (
+--   cart_item_id INT PRIMARY KEY AUTO_INCREMENT,
+--   cart_id INT NOT NULL REFERENCES Cart(cart_id),
+--   product_id INT NOT NULL REFERENCES Product(product_id),
+--   quantity INT NOT NULL
+-- );
 
 CREATE TABLE Orders (
   order_id INT PRIMARY KEY AUTO_INCREMENT,

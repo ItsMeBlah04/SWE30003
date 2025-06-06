@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Invoice</title>
+  <link rel="stylesheet" href="../css/invoice.css">
+</head>
+<body>
+    <div id="toast-notification" class="toast hidden">
+        ✅ Order placed successfully!
+    </div>
+    <div class="invoice-container">
+        <header>
+        <h1>INVOICE</h1>
+        <p>Date Issued: <span id="current-date"></span></p>
+        <p>Order ID: <span id="order-id"></span></p>
+        <p>Invoice ID: <span id="invoice-id"></span></p>
+        </header>
+
+        <section class="customer-details">
+        <h2>Billing Information</h2>
+        <p>Name: <span id="customer-name"></span></p>
+        <p>Email: <span id="customer-email"></span></p>
+        <p>Address: <span id="customer-address"></span></p>
+        <p>Phone: <span id="customer-phone"></span></p>
+        <p>Payment Method: <span id="payment-method"></span></p>
+        </section>
+
+        <section class="shipment-details">
+        <h2>Shipment Information</h2>
+        <p>Shipment ID: <span id="shipment-id"></span></p>
+        <p>Tracking #: <span id="tracking-number"></span></p>
+        <p>Status: <span id="shipment-status"></span></p>
+        </section>
+
+        <section class="order-details">
+        <h2>Order Summary</h2>
+        <table>
+            <thead>
+            <tr>
+                <th>Product</th>
+                <th>Description</th>
+                <th>Qty</th>
+                <th>Price</th>
+                <th>Total</th>
+            </tr>
+            </thead>
+            <tbody id="product-list">
+            <!-- Filled by JS -->
+            </tbody>
+        </table>
+
+        <div class="totals">
+            <p>Order Date: <span id="order-date"></span></p>
+            <p class="total-label">Total Amount: $<span id="order-total"></span></p>
+        </div>
+        </section>
+
+        <div class="home-btn-container">
+            <a href="web.html" class="home-button">← Back to Home</a>
+        </div>
+        <div class="pdf-export-container">
+            <button id="download-pdf" class="pdf-button">📄 Download PDF</button>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="../js/invoiceDisplay.js"></script>
+</body>
+</html>

@@ -1,0 +1,139 @@
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: #f4f4f4;
+  margin: 0;
+  padding: 2rem;
+}
+
+.invoice-container {
+  background: #fff;
+  padding: 2rem;
+  max-width: 900px;
+  margin: auto;
+  border-radius: 10px;
+  box-shadow: 0 0 15px rgba(0,0,0,0.1);
+}
+
+header {
+  border-bottom: 2px solid #ccc;
+  margin-bottom: 2rem;
+}
+
+header h1 {
+  font-size: 2.2rem;
+  color: #333;
+  margin: 0;
+}
+
+header p {
+  color: #666;
+  margin: 0.3rem 0;
+}
+
+section {
+  margin-bottom: 2rem;
+}
+
+h2 {
+  color: #444;
+  margin-bottom: 1rem;
+}
+
+p {
+  margin: 0.4rem 0;
+  color: #555;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
+}
+
+table thead th {
+  background-color: #f0f0f0;
+  border: 1px solid #ccc;
+  padding: 10px;
+  text-align: left;
+}
+
+table tbody td {
+  border: 1px solid #ddd;
+  padding: 10px;
+}
+
+.total-label {
+  font-size: 1.2rem;
+  font-weight: bold;
+  margin-top: 1rem;
+  color: #222;
+}
+
+.totals {
+  margin-top: 1.5rem;
+}
+
+.home-btn-container {
+  text-align: center;
+  margin-top: 2rem;
+}
+
+.home-button {
+  display: inline-block;
+  background-color: #1a1a1a; /* dark base */
+  color: #fff;
+  padding: 12px 24px;
+  text-decoration: none;
+  border-radius: 8px;
+  font-weight: bold;
+  transition: background-color 0.3s ease;
+}
+
+.home-button:hover {
+  background-color: #28a745; /* Bootstrap green */
+}
+
+.toast {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background-color: #4caf50;
+  color: white;
+  padding: 14px 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+  font-weight: bold;
+  z-index: 9999;
+  opacity: 0;
+  transform: translateY(-20px);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+.toast.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.toast.hidden {
+  display: none;
+}
+
+.pdf-export-container {
+  text-align: right;
+  margin: 20px;
+}
+
+.pdf-button {
+  background-color: #1976d2;
+  color: white;
+  padding: 10px 16px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  box-shadow: 0 3px 5px rgba(0, 0, 0, 0.1);
+}
+
+.pdf-button:hover {
+  background-color: #1565c0;
+}

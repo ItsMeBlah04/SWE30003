@@ -1,6 +1,7 @@
 <?php
-require_once 'config.php';
+require_once 'settings.php';
 require_once 'database_setup.php';
+require_once 'query.php';
 
 class Order extends Query {
 
@@ -9,28 +10,45 @@ class Order extends Query {
     }
 
     public function create($data) {
-        $customerId   = $data['customer_id'] ?? null;
-        $totalAmount  = $data['total_amount'] ?? null;
+        $customerId = $data['customer_id'];
+        $total = $data['total_amount'];
 
-        if (!$customerId || !$totalAmount) {
-            return ['success' => false, 'message' => 'Missing customer ID or total amount.'];
-        }
+        $stmt = $this->conn->prepare("INSERT INTO orders (customer_id, date, total_amount) VALUES (?, NOW(), ?)");
+        $stmt->bind_param("id", $customerId, $total);
 
-        try {
-            $sql = "INSERT INTO orders (customer_id, date, total_amount)
-                    VALUES (?, NOW(), ?)";
-            $this->execute($sql, [$customerId, $totalAmount]);
-
-            $orderId = $this->conn->lastInsertId();
-
+        if ($stmt->execute()) {
+            $orderId = $this->conn->insert_id; 
             return [
                 'success' => true,
-                'message' => 'Order created successfully.',
-                'order_id' => $orderId
+                'data' => [
+                    'order_id' => $orderId
+                ]
             ];
-        } catch (PDOException $e) {
-            return ['success' => false, 'message' => 'Database error: ' . $e->getMessage()];
+        } else {
+            return [
+                'success' => false,
+                'message' => 'Failed to create order: ' . $stmt->error
+            ];
         }
+    }
+    public function getListOrderIDs($customerId) {
+        $query = "SELECT order_id FROM orders WHERE customer_id = ?";
+        $stmt = $this->conn->prepare($query);
+
+        if (!$stmt) {
+            throw new Exception("Failed to prepare statement: " . $this->conn->error);
+        }
+
+        $stmt->bind_param("i", $customerId);
+        $stmt->execute();
+        $result = $stmt->get_result();
+
+        $orderIds = [];
+        while ($row = $result->fetch_assoc()) {
+            $orderIds[] = $row['order_id'];  
+        }
+
+        return $orderIds; // returns: [143, 144, 150, ...]
     }
 }
 ?>

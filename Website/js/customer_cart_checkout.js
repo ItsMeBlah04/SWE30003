@@ -1,8 +1,9 @@
 console.log("customer_cart_checkout.js is loaded");
-console.log("Its Me Blah")
-console.log(localStorage)
+console.log("Its Me Blah");
+console.log(localStorage);
 
-// Utility function to render cart
+let selectedPaymentMethod = null;
+
 function renderGuestCart(cart) {
   const cartItemsList = document.getElementById('cart-items-list');
   const subtotalAmountEl = document.getElementById('subtotal-amount');
@@ -41,7 +42,6 @@ function renderGuestCart(cart) {
   shippingFeeAmountEl.textContent = `$${shippingFee.toFixed(2)}`;
   totalAmountEl.textContent = `$${(subtotal + shippingFee).toFixed(2)}`;
 
-  // Remove item from cart
   document.querySelectorAll('.remove-btn').forEach(button => {
     button.addEventListener('click', () => {
       const idToRemove = parseInt(button.dataset.id);
@@ -52,63 +52,126 @@ function renderGuestCart(cart) {
   });
 }
 
+function showToast(message, success = true) {
+  const toast = document.getElementById('toast');
+  toast.textContent = message;
+  toast.style.backgroundColor = success ? '#28a745' : '#dc3545'; // Green or red
+  toast.className = 'toast show';
+
+  setTimeout(() => {
+    toast.className = 'toast';
+  }, 3000); // Hide after 3 seconds
+}
+
+
 document.addEventListener('DOMContentLoaded', () => {
   const customerId = localStorage.getItem('customer_id');
 
   if (!customerId) {
-    // Not logged in
     document.getElementById('cart-items-list').innerHTML = `
       <p style="color: red; font-weight: bold;">
         ⚠️ You must <a href="login_signup.html">log in</a> to proceed with checkout.
       </p>
     `;
-
-    // Prevent submission
-    const paymentForm = document.querySelector('.payment-method');
-    paymentForm?.addEventListener('submit', e => {
-      e.preventDefault();
-      alert('Please log in before completing checkout.');
-    });
-
     return;
   }
 
-  // Load and render guest cart
   const cart = JSON.parse(localStorage.getItem('guestCartItems')) || [];
   renderGuestCart(cart);
 
-  const paymentForm = document.querySelector('.payment-method');
-  if (!paymentForm) {
-    console.warn("Payment form not found");
-    return;
-  }
+  const customerInfoService = new CustomerInformationService();
+  const orderService = new OrderService();
+  const invoiceService = new InvoiceService();
+  const shipmentService = new ShipmentService();
 
-  paymentForm.addEventListener('submit', async (e) => {
+  document.getElementById('select-card').addEventListener('click', () => {
+    selectedPaymentMethod = 'card';
+    document.getElementById('card-section').style.display = 'block';
+    document.getElementById('paypal-section').style.display = 'none';
+  });
+
+  document.getElementById('select-paypal').addEventListener('click', () => {
+    selectedPaymentMethod = 'paypal';
+    document.getElementById('paypal-section').style.display = 'block';
+    document.getElementById('card-section').style.display = 'none';
+  });
+
+  document.getElementById('checkout-form').addEventListener('submit', async (e) => {
     e.preventDefault();
 
-    const cardNumber = document.getElementById('card-number')?.value;
+    const activeBtn = document.activeElement;
+    const submitterId = activeBtn?.id;
     const total = parseFloat(document.getElementById('total-amount').textContent.replace('$', '')) || 0;
-    const shipping = parseFloat(document.getElementById('shipping-fee-amount').textContent.replace('$', '')) || 0;
-    const cartItems = JSON.parse(localStorage.getItem('guestCartItems')) || [];
-    const productIds = cartItems.map(item => item.id);
 
-    const customerInfoService = new CustomerInformationService();
+    if (!submitterId || !customerId) {
+      showToast("❌ Something went wrong. Please log in again.", false);
+      return;
+    }
 
     try {
       const customerData = await customerInfoService.getCustomerInfo(customerId);
-      console.log("data has been retrieved");
-      console.log("form_info:", { cardNumber, total, shipping, customerId, productIds });
-      console.log("sessionStorage:", localStorage);
-      console.log("customerData:", customerData);
+      const orderData = await orderService.placeOrder(customerId, total);
+      // randomly generate tax numbers with 6 digits
+      const tax = Math.floor(Math.random() * 900000) + 100000; // Generates a random 6-digit number
+      const invoiceData = await invoiceService.createInvoice(orderData.order_id, tax, total);
+      // randomly generate tracking number with 4 digits
+      const trackingNumber = Math.floor(Math.random() * 9000) + 1000; // Generates a random 4-digit number
+      const shipmentData = await shipmentService.createShipment(orderData.order_id, trackingNumber);
 
-      alert(`Order placed for ${customerData.name}, shipping to ${customerData.address}`);
+      if (submitterId === 'pay-card') {
+        const cardDetails = {
+          cardNumber: document.getElementById('card-number')?.value.trim(),
+          expiryDate: document.getElementById('card-expiry')?.value.trim(),
+          cvv: document.getElementById('card-cvc')?.value.trim(),
+          name: document.getElementById('card-name')?.value.trim()
+        };
 
-      // Clear cart
-      localStorage.removeItem('guestCartItems');
-      // window.location.href = 'web.html';
+        if (!cardDetails.cardNumber || !cardDetails.expiryDate || !cardDetails.cvv || !cardDetails.name) {
+          showToast('❌ Please complete all card fields.', false);
+          return;
+        }
+
+        const cardService = new CardPaymentService();
+        cardService.validatePaymentDetails(cardDetails);
+        await cardService.processPayment(orderData.order_id, total);
+        showToast('✅ Card payment successful!');
+      }
+
+      if (submitterId === 'pay-paypal') {
+        const paypalDetails = {
+          email: document.getElementById('paypal-email')?.value.trim(),
+          name: document.getElementById('paypal-name')?.value.trim(),
+          country: document.getElementById('paypal-country')?.value
+        };
+
+        if (!paypalDetails.email || !paypalDetails.name || !paypalDetails.country) {
+          showToast('❌ Please complete all PayPal fields.', false);
+          return;
+        }
+
+        const paypalService = new PayPalPaymentService();
+        paypalService.validatePaymentDetails(paypalDetails);
+        await paypalService.processPayment(orderData.order_id, total);
+        showToast('✅ PayPal payment successful!');
+      }
+
+      // localStorage.removeItem('guestCartItems');
+
+      // save all data to localStorage
+      localStorage.setItem('order_info', JSON.stringify(orderData));
+      localStorage.setItem('order_total', total.toFixed(2));
+      localStorage.setItem('customer_info', JSON.stringify(customerData));
+      localStorage.setItem('payment_method', selectedPaymentMethod);
+      localStorage.setItem('curent_date', new Date().toISOString());
+      localStorage.setItem('invoice_info', JSON.stringify(invoiceData));
+      localStorage.setItem('shipment_info', JSON.stringify(shipmentData));
+      localStorage.setItem('total_amount', total.toFixed(2));
+
+      window.location.href = 'invoice.html';
+
     } catch (error) {
-      console.error("Failed to get customer info:", error.message);
-      alert("Could not retrieve your information. Please try again.");
+      console.error(`${submitterId} Payment Error:`, error);
+      showToast(`❌ ${submitterId === 'pay-card' ? 'Card' : 'PayPal'} Payment failed: ${error.message}`, false);
     }
   });
 });

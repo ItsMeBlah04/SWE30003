@@ -213,3 +213,31 @@ button {
   }
 
   
+button.btn {
+  width: 100%;
+  padding: 12px;
+  background-color: black;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+#login-logout-btn {
+  display: inline-block;
+  padding: 10px 16px;
+  background-color: black;
+  color: white;
+  border-radius: 6px;
+  text-decoration: none;
+  font-weight: 600;
+  transition: background-color 0.3s, transform 0.2s;
+}
+
+#login-logout-btn:hover {
+  background-color: green;
+  transform: scale(1.05);
+  color: white;
+}
+
