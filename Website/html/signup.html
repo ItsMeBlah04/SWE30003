@@ -3,61 +3,62 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>AWE Electronics | Sign Up</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="../css/user.css" />
-
-  <!-- Include model classes -->
-  <script src="../js/models/BaseModel.js"></script>
-
-  <!-- Include service classes -->
-  <script src="../js/services/AuthService.js"></script>
+  <title>AWE Electronics | Products</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../css/product.css" />
 </head>
 <body>
   <header>
-    <div><strong>AWE Electronics</strong></div>
+    <div>
+      <a href="web.html"><strong>AWE Electronics</strong></a>
+    </div>
     <nav>
       <a href="web.html">Home</a>
       <a href="about.html">About</a>
       <a href="product.html">Products</a>
-      <a href="checkout.html">Checkout</a>
-      <a href="track_order.html" id="track-link">Track Order</a>
-      <a href="login_signup.html" class="btn">Login</a>
+      <a href="checkout.html" class="btn">Checkout (<span id="cart-count">0</span>)</a>
+      <a href="track_order.html" id="track-link" style="display: none;">Track Order</a>
+      <a href="login_signup.html" class="btn" id="login-logout-btn">Login</a>
     </nav>
   </header>
 
-  <div class="container">
-    <h2>Sign Up</h2>
+  <main>
+    <section class="products-section">
+      <div class="product-header">
+        <h2>Available Products</h2>
+        <input type="text" id="search-input" placeholder="Search products..." />
+      </div>
+      <div id="product-list" class="product-grid"></div>
+    </section>
+  </main>
 
-    <!-- Separate Signup Form -->
-    <form id="signup-form">
-      <input type="text" name="first_name" placeholder="First Name" required />
-      <input type="text" name="last_name" placeholder="Last Name" required />
-      <input type="email" name="email" placeholder="Email" required />
-      <input type="tel" name="phone" placeholder="Phone Number" required />
-      <input type="text" name="address" placeholder="Address" required />
-      <input type="password" name="password" placeholder="Password" required />
-      <button type="submit">Sign Up</button>
-    </form>
+  <footer class="footer">
+    <div>
+      <p><strong>Resources</strong></p>
+      <a href="#">FAQs</a>
+      <a href="#">Support</a>
+      <a href="#">Terms</a>
+      <a href="#">Privacy</a>
+    </div>
+    <div>
+      <p><strong>Company</strong></p>
+      <a href="#">About Us</a>
+      <a href="#">Careers</a>
+      <a href="#">Press</a>
+      <a href="#">Partnerships</a>
+    </div>
+    <div>
+      <p><strong>Connect</strong></p>
+      <a href="#">Facebook</a>
+      <a href="#">Twitter</a>
+      <a href="#">Instagram</a>
+      <a href="#">LinkedIn</a>
+    </div>
+  </footer>
 
-    <div id="message-container"></div>
-
-    <p style="margin-top: 10px;">
-      Already have an account? <a href="login_signup.html">Login here</a>
-    </p>
-  </div>
-
-  <script>
-    // Hide Track Order link on signup page
-    document.addEventListener('DOMContentLoaded', function () {
-      const trackLink = document.getElementById('track-link');
-      if (trackLink) {
-        trackLink.style.display = 'none';
-      }
-    });
-  </script>
-
-  <script src="../js/signup.js"></script>
+  <script src="../js/services/ProductService.js"></script>
   <script src="../js/session.js"></script>
+  <script src="../js/customer_product.js"></script>
+  <script src="../js/navbar_visibility.js"></script>
 </body>
 </html>

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Electrik | Track Your Order</title>
+  <title>AWE Electronics | Track Your Order</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../css/track_order.css" />
   <script src="../js/track_order.js" type="module" defer></script>
@@ -11,10 +11,10 @@
 <body>
 
   <header>
-    <div><strong>Electrik</strong></div>
+    <div><strong>AWE Electronics</strong></div>
     <nav>
       <a href="web.html">Home</a>
-      <a href="#">About</a>
+      <a href="about.html">About</a>
       <a href="product.html">Products</a>
       <a href="#">Contact</a>
       <a href="checkout.html">Checkout</a>
@@ -43,33 +43,32 @@
     </div>
   </section>
 
-  <script>
-    document.addEventListener("DOMContentLoaded", function () {
-      const customerId = localStorage.getItem("customer_id");
-      const trackLink = document.getElementById("track-link");
-      const logoutBtn = document.getElementById("logoutBtn");
-      const loginBtn = document.getElementById("loginBtn");
+  <footer class="footer">
+    <div>
+      <p><strong>Resources</strong></p>
+      <a href="#">FAQs</a>
+      <a href="#">Support</a>
+      <a href="#">Terms</a>
+      <a href="#">Privacy</a>
+    </div>
+    <div>
+      <p><strong>Company</strong></p>
+      <a href="about.html">About Us</a>
+      <a href="#">Careers</a>
+      <a href="#">Press</a>
+      <a href="#">Partnerships</a>
+    </div>
+    <div>
+      <p><strong>Connect</strong></p>
+      <a href="#">Facebook</a>
+      <a href="#">Twitter</a>
+      <a href="#">Instagram</a>
+      <a href="#">LinkedIn</a>
+    </div>
+  </footer>
 
-  
-
-      // Show/hide navbar elements based on login status
-      if (customerId) {
-        if (trackLink) trackLink.style.display = "inline-block";
-        if (logoutBtn) logoutBtn.style.display = "inline-block";
-        if (loginBtn) loginBtn.style.display = "none";
-      } else {
-        if (trackLink) trackLink.style.display = "none";
-        if (logoutBtn) logoutBtn.style.display = "none";
-        if (loginBtn) loginBtn.style.display = "inline-block";
-      }
-
-      logoutBtn?.addEventListener("click", function (e) {
-        e.preventDefault();
-        localStorage.removeItem("customer_id");
-        window.location.href = "login_signup.html";
-      });
-    });
-  </script>
-
+  <!-- JS -->
+  <script src="../js/session.js"></script>
+  <script src="../js/navbar_visibility.js"></script>
 </body>
 </html>
