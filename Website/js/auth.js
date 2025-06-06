@@ -69,12 +69,13 @@ function setupForms() {
     e.preventDefault();
 
     // Get form data
-    const inputs = this.querySelectorAll('input');
-    const first_name = inputs[0].value.trim();
-    const last_name = inputs[1].value.trim();
-    const email = inputs[2].value.trim();
-    const phone = inputs[3].value.trim();
-    const password = inputs[4].value;
+    const first_name = signupForm.querySelector('input[name="first_name"]').value.trim();
+const last_name = signupForm.querySelector('input[name="last_name"]').value.trim();
+const email = signupForm.querySelector('input[name="email"]').value.trim();
+const phone = signupForm.querySelector('input[name="phone"]').value.trim();
+const address = signupForm.querySelector('input[name="address"]').value.trim();
+const password = signupForm.querySelector('input[name="password"]').value;
+
     
     // Disable submit button
     const submitBtn = this.querySelector('button[type="submit"]');
@@ -93,6 +94,8 @@ function setupForms() {
     })
     .then(data => {
       showMessage('Account created successfully!', true);
+      localStorage.setItem('customer_id', data.customer_id);
+      localStorage.setItem('customer_name', data.name);
       window.location.href = 'web.html';
     })
     .catch(error => {

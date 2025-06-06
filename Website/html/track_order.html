@@ -3,10 +3,10 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Track Your Order</title>
-   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <title>AWE Electronics | Track Your Order</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../css/track_order.css" />
-  <script src="../js/track_order.js" defer></script>
+  <script src="../js/track_order.js" type="module" defer></script>
 </head>
 <body>
 
@@ -16,41 +16,59 @@
       <a href="web.html">Home</a>
       <a href="about.html">About</a>
       <a href="product.html">Products</a>
+      <a href="#">Contact</a>
       <a href="checkout.html">Checkout</a>
-      <a href="track_order.html">Track Order</a>
-      <a href="login_signup.html" class="btn" id="login-logout-btn">Login</a>
+      <a href="track_order.html" id="track-link" style="display: none;">Track Order</a>
+      <a href="#" id="logoutBtn" class="btn" style="display: none;">Logout</a>
+      <a href="login_signup.html" class="btn" id="loginBtn">Login</a>
     </nav>
   </header>
 
   <section class="track-section">
     <div class="track-container">
       <h1>Track Your Order</h1>
-      <p class="track-subtext">Enter your Order ID below to check the latest status.</p>
+      <p class="track-subtext">Enter your Order ID <strong>OR</strong> your Name with Email or Phone.</p>
 
-      <input type="text" id="orderId" placeholder="e.g. ORD101" />
-      <button onclick="trackOrder()">Track</button>
+      <form id="track-order-form">
+        <input type="text" name="order_id" placeholder="Order ID" />
+        <div class="divider">OR</div>
+        <input type="text" name="name" placeholder="Full Name" />
+        <div class="divider small">Email <strong>OR</strong> Phone</div>
+        <input type="text" name="email" placeholder="Email" />
+        <input type="text" name="phone" placeholder="Phone Number" />
+        <button type="submit">Track</button>
+      </form>
 
-      <div id="result" class="result-box"></div>
+      <div id="result-container" class="result-box"></div>
     </div>
   </section>
 
-  <div class="footer">
+  <footer class="footer">
     <div>
-        <p><strong>Resources</strong></p>
-        <a href="#">FAQs</a>
-        <a href="#">Support</a>
-        <a href="#">Terms</a>
-        <a href="#">Privacy</a>
+      <p><strong>Resources</strong></p>
+      <a href="#">FAQs</a>
+      <a href="#">Support</a>
+      <a href="#">Terms</a>
+      <a href="#">Privacy</a>
     </div>
     <div>
-        <p><strong>Company</strong></p>
-        <a href="about.html">About Us</a>
-        <a href="#">Careers</a>
-        <a href="#">Press</a>
-        <a href="#">Partnerships</a>
+      <p><strong>Company</strong></p>
+      <a href="about.html">About Us</a>
+      <a href="#">Careers</a>
+      <a href="#">Press</a>
+      <a href="#">Partnerships</a>
     </div>
-  </div>
+    <div>
+      <p><strong>Connect</strong></p>
+      <a href="#">Facebook</a>
+      <a href="#">Twitter</a>
+      <a href="#">Instagram</a>
+      <a href="#">LinkedIn</a>
+    </div>
+  </footer>
 
+  <!-- JS -->
   <script src="../js/session.js"></script>
+  <script src="../js/navbar_visibility.js"></script>
 </body>
 </html>

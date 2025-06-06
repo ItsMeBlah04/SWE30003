@@ -3,43 +3,50 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Electrik | Products</title>
+  <title>AWE Electronics | Products</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="../css/product.css" />
 </head>
 <body>
   <header>
-    <div><strong>Electrik</strong></div>
+    <div><a href="web.html"><strong>AWE Electronics</strong></a></div>
     <nav>
       <a href="web.html">Home</a>
       <a href="about.html">About</a>
       <a href="product.html">Products</a>
-      <a href="checkout.html">Checkout</a>
-      <a href="track_order.html">Track Order</a>
-      <a href="login_signup.html" class="btn">Login</a>
+      <a href="checkout.html" class="btn">Checkout (<span id="cart-count">0</span>)</a>
+      <a href="track_order.html" id="track-link" style="display: none;">Track Order</a>
+      <a href="#" id="logoutBtn" class="btn" style="display: none;">Logout</a>
+      <a href="login_signup.html" class="btn" id="loginBtn">Login</a>
     </nav>
   </header>
 
-  <section class="products-section">
-    <div id="product-list" class="product-grid"></div>
-  </section>
+  <main>
+    <section class="products-section">
+      <div id="product-list" class="product-grid"></div>
+    </section>
+  </main>
 
-  <div class="footer">
+  <footer class="footer">
     <div>
-        <p><strong>Resources</strong></p>
-        <a href="#">FAQs</a>
-        <a href="#">Support</a>
-        <a href="#">Terms</a>
-        <a href="#">Privacy</a>
+      <p><strong>Resources</strong></p>
+      <a href="#">FAQs</a>
+      <a href="#">Support</a>
+      <a href="#">Terms</a>
+      <a href="#">Privacy</a>
     </div>
     <div>
-        <p><strong>Company</strong></p>
-        <a href="about.html">About Us</a>
-        <a href="#">Careers</a>
-        <a href="#">Press</a>
-        <a href="#">Partnerships</a>
+      <p><strong>Company</strong></p>
+      <a href="about.html">About Us</a>
+      <a href="#">Careers</a>
+      <a href="#">Press</a>
+      <a href="#">Partnerships</a>
     </div>
-  </div>
+  </footer>
 
+  <!-- JS -->
+  <script src="../js/session.js"></script>
   <script src="../js/customer_products.js"></script>
+  <script src="../js/navbar_visibility.js"></script>
 </body>
 </html>

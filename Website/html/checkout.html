@@ -16,8 +16,9 @@
       <a href="product.html">Products</a>
       <a href="#">Contact</a>
       <a href="checkout.html">Checkout</a>
-      <a href="track_order.html">Track Order</a>
-      <a href="login_signup.html" class="btn">Login</a>
+      <a href="track_order.html" id="track-link">Track Order</a>
+      <a href="#" class="btn" id="logoutBtn">Logout</a>
+      <a href="login_signup.html" class="btn" id="loginBtn">Login</a>
     </nav>
   </header>
 
@@ -36,49 +37,49 @@
     </div>
 
     <!-- All in one form: customer + payment info -->
-  <form class="payment-method"> 
-    <h3>Payment Method</h3>
-    <div class="form-group">
-      <label for="card-number">Card Number:</label>
-      <input type="text" id="card-number" name="card-number" maxlength="19" placeholder="1234 5678 9012 3456" required>
-    </div>
-    <div class="form-group">
-      <label for="card-cvc">CVC:</label>
-      <input type="text" id="card-cvc" name="card-cvc" maxlength="4" placeholder="123" required>
-    </div>
-    <div class="form-group">
-      <label for="card-expiry">Expiry Date:</label>
-      <input type="text" id="card-expiry" name="card-expiry" maxlength="7" placeholder="MM/YY" required>
-    </div>
-    <div class="form-group">
-      <label for="card-name">Name on Card:</label>
-      <input type="text" id="card-name" name="card-name" required>
-    </div>
-
-    <button type="submit" class="btn">Proceed to Payment</button>
-  </form> 
-
+    <form class="payment-method"> 
+      <h3>Payment Method</h3>
+      <div class="form-group">
+        <label for="card-number">Card Number:</label>
+        <input type="text" id="card-number" name="card-number" maxlength="19" placeholder="1234 5678 9012 3456" required>
+      </div>
+      <div class="form-group">
+        <label for="card-cvc">CVC:</label>
+        <input type="text" id="card-cvc" name="card-cvc" maxlength="4" placeholder="123" required>
+      </div>
+      <div class="form-group">
+        <label for="card-expiry">Expiry Date:</label>
+        <input type="text" id="card-expiry" name="card-expiry" maxlength="7" placeholder="MM/YY" required>
+      </div>
+      <div class="form-group">
+        <label for="card-name">Name on Card:</label>
+        <input type="text" id="card-name" name="card-name" required>
+      </div>
+      <button type="submit" class="btn">Proceed to Payment</button>
+    </form> 
   </div>
 
   <div class="footer">
     <div>
-        <p><strong>Resources</strong></p>
-        <a href="#">FAQs</a>
-        <a href="#">Support</a>
-        <a href="#">Terms</a>
-        <a href="#">Privacy</a>
+      <p><strong>Resources</strong></p>
+      <a href="#">FAQs</a>
+      <a href="#">Support</a>
+      <a href="#">Terms</a>
+      <a href="#">Privacy</a>
     </div>
     <div>
-        <p><strong>Company</strong></p>
-        <a href="about.html">About Us</a>
-        <a href="#">Careers</a>
-        <a href="#">Press</a>
-        <a href="#">Partnerships</a>
+      <p><strong>Company</strong></p>
+      <a href="about.html">About Us</a>
+      <a href="#">Careers</a>
+      <a href="#">Press</a>
+      <a href="#">Partnerships</a>
     </div>
   </div>
 
+  <!-- JS -->
   <script src="../js/session.js"></script>
   <script type="module" src="../js/customer_cart_checkout.js"></script>
   <script src="../js/services/CustomerInformationService.js"></script>
+  <script src="../js/navbar_visibility.js"></script>
 </body>
 </html>

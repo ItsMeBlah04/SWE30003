@@ -17,8 +17,9 @@
       <a href="about.html">About</a>
       <a href="product.html">Products</a>
       <a href="checkout.html" class="btn">Checkout (<span id="cart-count">0</span>)</a>
-      <a href="track_order.html">Track Order</a>
-      <a href="login_signup.html" class="btn">Login</a>
+      <a href="track_order.html" id="track-link" style="display: none;">Track Order</a>
+      <a href="#" id="logoutBtn" class="btn" style="display: none;">Logout</a>
+      <a href="login_signup.html" class="btn" id="loginBtn">Login</a>
     </nav>
   </header>
 
@@ -56,8 +57,10 @@
     </div>
   </footer>
 
+  <!-- JS -->
   <script src="../js/services/ProductService.js"></script>
   <script src="../js/session.js"></script>
   <script src="../js/customer_product.js"></script>
+  <script src="../js/navbar_visibility.js"></script>
 </body>
 </html>

@@ -10,7 +10,7 @@
   <!-- Include model classes -->
   <script src="../js/models/BaseModel.js"></script>
   <script src="../js/models/Admin.js"></script>
-  
+
   <!-- Include service classes -->
   <script src="../js/services/AuthService.js"></script>
 </head>
@@ -22,7 +22,7 @@
       <a href="about.html">About</a>
       <a href="product.html">Products</a>
       <a href="checkout.html">Checkout</a>
-      <a href="track_order.html">Track Order</a>
+      <a href="track_order.html" id="track-link" style="display: none;">Track Order</a>
       <a href="login_signup.html" class="btn" id="login-logout-btn">Login</a>
     </nav>
   </header>
@@ -73,29 +73,30 @@
     <div class="toggle-link">
       <a href="signup.html">Don't have an account? Sign Up</a>
     </div>
-        
+
     <div id="message-container"></div>
   </div>
 
   <div class="footer">
     <div>
-        <p><strong>Resources</strong></p>
-        <a href="#">FAQs</a>
-        <a href="#">Support</a>
-        <a href="#">Terms</a>
-        <a href="#">Privacy</a>
+      <p><strong>Resources</strong></p>
+      <a href="#">FAQs</a>
+      <a href="#">Support</a>
+      <a href="#">Terms</a>
+      <a href="#">Privacy</a>
     </div>
     <div>
-        <p><strong>Company</strong></p>
-        <a href="about.html">About Us</a>
-        <a href="#">Careers</a>
-        <a href="#">Press</a>
-        <a href="#">Partnerships</a>
+      <p><strong>Company</strong></p>
+      <a href="about.html">About Us</a>
+      <a href="#">Careers</a>
+      <a href="#">Press</a>
+      <a href="#">Partnerships</a>
     </div>
   </div>
 
   <!-- Include page-specific scripts -->
   <script src="../js/auth.js"></script>
   <script src="../js/session.js"></script>
+  <script src="../js/navbar_visibility.js"></script>
 </body>
 </html>
